@@ -1,0 +1,45 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function email() { return request.auth.token.email; }
+    function settings() { return get(/databases/$(database)/documents/meta/settings).data; }
+    function isTeacher() {
+      return signedIn() && request.auth.token.email != null
+        && exists(/databases/$(database)/documents/meta/settings)
+        && email().lower() in settings().teachers;
+    }
+
+    // School settings: classes and teacher emails.
+    match /meta/settings {
+      allow read: if signedIn();
+      // The very first teacher to sign in sets up the school.
+      allow create: if signedIn() && request.auth.token.email != null
+        && request.resource.data.teachers == [email().lower()];
+      allow update, delete: if isTeacher();
+    }
+
+    // Topics and questions (one document).
+    match /meta/bank {
+      allow read: if signedIn();
+      allow write: if isTeacher() || (signedIn() && !exists(/databases/$(database)/documents/meta/bank)
+        && getAfter(/databases/$(database)/documents/meta/settings).data.teachers == [email().lower()]);
+    }
+
+    // Student accounts and scores. Teachers manage them; students may only update their own progress fields.
+    match /students/{id} {
+      allow read: if signedIn();
+      allow create, delete: if isTeacher();
+      allow update: if isTeacher() || (signedIn()
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['points', 'answered', 'correct', 'best', 'attempts', 'lastActive']));
+    }
+
+    // Per-question answer counts, one document per topic.
+    match /qstats/{topicId} {
+      allow read: if isTeacher();
+      allow create, update: if signedIn();
+      allow delete: if isTeacher();
+    }
+  }
+}

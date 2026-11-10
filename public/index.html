@@ -1,0 +1,1778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Science Quest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #eef6ff;
+    --card: #ffffff;
+    --ink: #1f2a44;
+    --muted: #6b7690;
+    --primary: #2f6fed;
+    --primary-dark: #1f54c4;
+    --good: #1fae6a;
+    --good-bg: #e3f8ee;
+    --bad: #e04f4f;
+    --bad-bg: #fdeaea;
+    --gold: #f5b100;
+    --bio: #20a464;
+    --chem: #8a4fe0;
+    --phys: #f07b1d;
+    --earth: #1b8fc7;
+    --radius: 18px;
+    --shadow: 0 6px 0 rgba(31, 42, 68, .08), 0 2px 12px rgba(31, 42, 68, .06);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    font-family: "Nunito", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font-family: inherit; cursor: pointer; }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 16px 16px 48px; }
+
+  /* Top bar */
+  .topbar {
+    position: sticky; top: 0; z-index: 10;
+    background: var(--primary);
+    color: #fff;
+    box-shadow: 0 2px 10px rgba(0,0,0,.12);
+  }
+  .topbar-inner {
+    max-width: 920px; margin: 0 auto; padding: 10px 16px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .brand { font-weight: 900; font-size: 20px; letter-spacing: .2px; display: flex; align-items: center; gap: 8px; }
+  .brand svg { width: 28px; height: 28px; }
+  .spacer { flex: 1; }
+  .pill {
+    background: rgba(255,255,255,.18); border-radius: 999px; padding: 6px 12px;
+    font-weight: 800; display: flex; align-items: center; gap: 6px; font-size: 15px;
+  }
+  .coin { width: 18px; height: 18px; border-radius: 50%; background: var(--gold); border: 2px solid #ffd75a; display: inline-block; box-shadow: inset 0 -2px 0 rgba(0,0,0,.15); }
+  .nav { display: flex; gap: 6px; }
+  .nav button {
+    background: transparent; color: #fff; border: 0; padding: 8px 12px; border-radius: 12px;
+    font-weight: 800; font-size: 15px;
+  }
+  .nav button.active, .nav button:hover { background: rgba(255,255,255,.2); }
+
+  /* Cards */
+  .card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; }
+  h1 { font-size: 28px; margin: 8px 0 4px; font-weight: 900; }
+  h2 { font-size: 20px; margin: 24px 0 12px; font-weight: 900; }
+  .muted { color: var(--muted); }
+  .btn {
+    border: 0; border-radius: 14px; padding: 14px 22px; font-size: 17px; font-weight: 900;
+    background: var(--primary); color: #fff; box-shadow: 0 4px 0 var(--primary-dark);
+    transition: transform .05s ease;
+  }
+  .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--primary-dark); }
+  .btn:disabled { background: #b8c4dd; box-shadow: 0 4px 0 #9aa7c2; cursor: not-allowed; }
+  .btn.ghost { background: #fff; color: var(--primary); box-shadow: 0 4px 0 #cdd8ee; border: 2px solid #cdd8ee; }
+  .btn.good { background: var(--good); box-shadow: 0 4px 0 #168553; }
+  .btn.block { width: 100%; }
+
+  /* Login */
+  .login { max-width: 440px; margin: 40px auto; text-align: center; }
+  .login .hero { width: 96px; height: 96px; margin: 0 auto 8px; }
+  label { display: block; text-align: left; font-weight: 800; margin: 16px 0 6px; }
+  input[type=text], select {
+    width: 100%; padding: 14px; border-radius: 12px; border: 2px solid #d5deef; font-size: 17px;
+    font-family: inherit; color: var(--ink); background: #fff;
+  }
+  input[type=text]:focus, select:focus { outline: none; border-color: var(--primary); }
+
+  /* Stage tabs */
+  .stages { display: flex; gap: 8px; flex-wrap: wrap; }
+  .stage-btn {
+    border: 2px solid #d5deef; background: #fff; color: var(--ink); border-radius: 12px;
+    padding: 8px 14px; font-weight: 800; font-size: 15px;
+  }
+  .stage-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .stage-btn .soon { font-size: 11px; font-weight: 700; color: var(--muted); display: block; }
+  .stage-btn.active .soon { color: #dce6ff; }
+
+  /* Stats row */
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px; }
+  .stat { text-align: center; padding: 14px 8px; }
+  .stat .num { font-size: 26px; font-weight: 900; }
+  .stat .lbl { color: var(--muted); font-weight: 700; font-size: 13px; }
+
+  /* Topics */
+  .topics { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+  .topic {
+    display: flex; gap: 14px; align-items: center; text-align: left; border: 0; width: 100%;
+    background: #fff; border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow);
+    color: var(--ink); transition: transform .1s ease;
+  }
+  .topic:hover { transform: translateY(-2px); }
+  .topic .icon {
+    width: 56px; height: 56px; border-radius: 16px; flex: none; display: grid; place-items: center; color: #fff;
+  }
+  .topic .icon svg { width: 32px; height: 32px; }
+  .topic .t { font-weight: 900; font-size: 16px; line-height: 1.25; }
+  .topic .s { color: var(--muted); font-size: 13px; font-weight: 700; margin-top: 2px; }
+  .stars { display: flex; gap: 2px; margin-top: 6px; }
+  .star { width: 18px; height: 18px; }
+  .strand-bio { background: var(--bio); }
+  .strand-chem { background: var(--chem); }
+  .strand-phys { background: var(--phys); }
+  .strand-earth { background: var(--earth); }
+  .tag { display: inline-block; font-size: 12px; font-weight: 800; padding: 3px 9px; border-radius: 999px; color: #fff; }
+
+  .empty { text-align: center; padding: 40px 20px; }
+
+  /* Quiz */
+  .quiz-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .close-x { background: #fff; border: 2px solid #d5deef; width: 42px; height: 42px; border-radius: 12px; font-size: 20px; font-weight: 900; color: var(--muted); }
+  .progress { flex: 1; height: 16px; background: #dbe5f6; border-radius: 999px; overflow: hidden; }
+  .progress > div { height: 100%; background: var(--good); border-radius: 999px; transition: width .3s ease; }
+  .qcount { font-weight: 800; color: var(--muted); white-space: nowrap; }
+  .qtext { font-size: 21px; font-weight: 800; line-height: 1.4; margin: 6px 0 18px; }
+  .options { display: grid; gap: 10px; }
+  .opt {
+    display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+    background: #fff; border: 2px solid #d5deef; border-radius: 14px; padding: 14px 16px;
+    font-size: 17px; font-weight: 700; color: var(--ink); box-shadow: 0 3px 0 #d5deef;
+  }
+  .opt .key {
+    width: 32px; height: 32px; border-radius: 10px; background: #eef2fa; display: grid; place-items: center;
+    font-weight: 900; flex: none; color: var(--muted);
+  }
+  .opt.selected { border-color: var(--primary); box-shadow: 0 3px 0 var(--primary); background: #f1f6ff; }
+  .opt.selected .key { background: var(--primary); color: #fff; }
+  .opt.correct { border-color: var(--good); box-shadow: 0 3px 0 var(--good); background: var(--good-bg); }
+  .opt.correct .key { background: var(--good); color: #fff; }
+  .opt.wrong { border-color: var(--bad); box-shadow: 0 3px 0 var(--bad); background: var(--bad-bg); }
+  .opt.wrong .key { background: var(--bad); color: #fff; }
+  .opt:disabled { cursor: default; }
+  .tf { grid-template-columns: 1fr 1fr; }
+  .tf .opt { justify-content: center; font-size: 19px; padding: 20px; }
+  .fill-input { font-size: 20px !important; font-weight: 800; }
+
+  .feedback { margin-top: 18px; border-radius: 16px; padding: 16px 18px; }
+  .feedback.ok { background: var(--good-bg); }
+  .feedback.no { background: var(--bad-bg); }
+  .feedback .title { font-weight: 900; font-size: 19px; display: flex; align-items: center; gap: 8px; }
+  .feedback.ok .title { color: #12804c; }
+  .feedback.no .title { color: #b83434; }
+  .feedback .ans { font-weight: 800; margin-top: 6px; }
+  .feedback .exp { margin-top: 6px; line-height: 1.5; }
+  .quiz-actions { margin-top: 18px; display: flex; justify-content: flex-end; }
+
+  /* Results */
+  .result { text-align: center; }
+  .big-stars { display: flex; justify-content: center; gap: 8px; margin: 10px 0; }
+  .big-stars svg { width: 54px; height: 54px; }
+  .result .score { font-size: 44px; font-weight: 900; }
+  .earned { display: inline-flex; align-items: center; gap: 8px; font-size: 20px; font-weight: 900; background: #fff6d8; color: #946b00; padding: 8px 16px; border-radius: 999px; margin: 8px 0 16px; }
+  .review { text-align: left; margin-top: 18px; display: grid; gap: 10px; }
+  .review-item { border-radius: 14px; padding: 12px 14px; border: 2px solid #e3e9f5; }
+  .review-item .q { font-weight: 800; }
+  .review-item .a { font-size: 14px; margin-top: 4px; }
+  .review-item .mark { font-weight: 900; }
+  .review-item.ok .mark { color: var(--good); }
+  .review-item.no .mark { color: var(--bad); }
+  .row-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 18px; }
+
+  /* Leaderboard */
+  .seg { display: inline-flex; background: #dfe8f8; border-radius: 14px; padding: 4px; gap: 4px; }
+  .seg button { border: 0; background: transparent; padding: 8px 16px; border-radius: 10px; font-weight: 800; color: var(--muted); font-size: 15px; }
+  .seg button.active { background: #fff; color: var(--primary); box-shadow: 0 2px 6px rgba(0,0,0,.08); }
+  .podium { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; align-items: end; margin: 20px 0 10px; }
+  .pod { text-align: center; }
+  .pod .avatar { margin: 0 auto 6px; }
+  .pod .bar { border-radius: 14px 14px 0 0; color: #fff; font-weight: 900; padding: 10px 4px; }
+  .pod .name { font-weight: 800; font-size: 14px; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pod .pts { font-size: 13px; font-weight: 800; color: var(--muted); margin-bottom: 6px; }
+  .p1 .bar { background: var(--gold); height: 110px; font-size: 30px; }
+  .p2 .bar { background: #9aa7c2; height: 80px; font-size: 24px; }
+  .p3 .bar { background: #d08a4c; height: 60px; font-size: 22px; }
+  .avatar { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-weight: 900; color: #fff; flex: none; }
+  .lb-list { display: grid; gap: 8px; }
+  .lb-row { display: flex; align-items: center; gap: 12px; background: #fff; border-radius: 14px; padding: 10px 14px; box-shadow: 0 2px 0 rgba(31,42,68,.06); }
+  .lb-row.me { outline: 3px solid var(--primary); }
+  .lb-row .rank { width: 30px; font-weight: 900; color: var(--muted); text-align: center; }
+  .lb-row .nm { flex: 1; font-weight: 800; }
+  .lb-row .cls { font-size: 12px; color: var(--muted); font-weight: 700; }
+  .lb-row .pts { font-weight: 900; display: flex; align-items: center; gap: 6px; }
+  .note { font-size: 13px; color: var(--muted); margin-top: 14px; text-align: center; }
+
+  @media (max-width: 560px) {
+    h1 { font-size: 23px; }
+    .qtext { font-size: 19px; }
+    .brand span { display: none; }
+    .nav button { padding: 8px 9px; font-size: 14px; }
+    .stats .num { font-size: 22px; }
+  }
+
+  /* ---------- Login role switch ---------- */
+  .role-seg { display: flex; background: #dfe8f8; border-radius: 14px; padding: 4px; gap: 4px; margin: 18px 0 4px; }
+  .role-seg button { flex: 1; border: 0; background: transparent; padding: 10px; border-radius: 10px; font-weight: 900; color: var(--muted); font-size: 16px; }
+  .role-seg button.active { background: #fff; color: var(--primary); box-shadow: 0 2px 6px rgba(0,0,0,.08); }
+  .err { color: var(--bad); font-weight: 800; margin-top: 10px; min-height: 20px; }
+
+  /* ---------- Teacher ---------- */
+  body.teacher .topbar { background: #24324f; }
+  .t-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 16px 0 6px; }
+  .kpi { padding: 14px 16px; }
+  .kpi .num { font-size: 26px; font-weight: 900; }
+  .kpi .lbl { color: var(--muted); font-weight: 700; font-size: 13px; }
+  .toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 16px 0 12px; }
+  .toolbar select, .toolbar input[type=text] { width: auto; min-width: 150px; padding: 10px 12px; font-size: 15px; }
+  .btn.sm { padding: 9px 14px; font-size: 14px; border-radius: 11px; box-shadow: 0 3px 0 var(--primary-dark); }
+  .btn.sm.ghost { box-shadow: 0 3px 0 #cdd8ee; }
+  .btn.danger { background: var(--bad); box-shadow: 0 4px 0 #b83434; }
+  .btn.sm.danger { box-shadow: 0 3px 0 #b83434; }
+  .linkbtn { background: none; border: 0; color: var(--primary); font-weight: 800; padding: 4px 6px; font-size: 14px; }
+  .linkbtn.red { color: var(--bad); }
+  .tbl-wrap { overflow-x: auto; background: #fff; border-radius: var(--radius); box-shadow: var(--shadow); }
+  table.tbl { width: 100%; border-collapse: collapse; font-size: 15px; }
+  .tbl th { text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); padding: 12px 14px; border-bottom: 2px solid #eef2fa; white-space: nowrap; }
+  .tbl td { padding: 11px 14px; border-bottom: 1px solid #eef2fa; vertical-align: middle; }
+  .tbl tr:last-child td { border-bottom: 0; }
+  .tbl td.num, .tbl th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .tbl tr.click { cursor: pointer; }
+  .tbl tr.click:hover td { background: #f6f9ff; }
+  .namecell { display: flex; align-items: center; gap: 10px; font-weight: 800; }
+  .heat { display: inline-block; min-width: 52px; text-align: center; border-radius: 8px; padding: 4px 8px; font-weight: 900; font-size: 14px; }
+  .bar-mini { height: 8px; background: #eef2fa; border-radius: 99px; overflow: hidden; min-width: 80px; }
+  .bar-mini > div { height: 100%; border-radius: 99px; }
+  .qrow-q { font-weight: 700; line-height: 1.35; }
+  .qrow-meta { font-size: 12px; color: var(--muted); font-weight: 700; margin-top: 3px; }
+  .chip { display: inline-block; font-size: 11px; font-weight: 900; padding: 2px 8px; border-radius: 99px; background: #eef2fa; color: var(--muted); text-transform: uppercase; letter-spacing: .3px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .section-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 26px 0 12px; }
+  .section-title h2 { margin: 0; }
+  .back { background: none; border: 0; color: var(--primary); font-weight: 900; font-size: 15px; padding: 0; margin-top: 6px; }
+
+  /* Modal */
+  .modal-bg { position: fixed; inset: 0; background: rgba(20, 28, 48, .45); display: grid; place-items: center; z-index: 50; padding: 16px; }
+  .modal { background: #fff; border-radius: var(--radius); width: 100%; max-width: 560px; max-height: 92vh; overflow-y: auto; padding: 22px; box-shadow: 0 20px 60px rgba(0,0,0,.25); }
+  .modal h2 { margin-top: 0; }
+  .modal textarea { width: 100%; padding: 12px; border-radius: 12px; border: 2px solid #d5deef; font-size: 16px; font-family: inherit; min-height: 80px; resize: vertical; color: var(--ink); }
+  .modal textarea:focus { outline: none; border-color: var(--primary); }
+  .opt-edit { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .opt-edit input[type=radio] { width: 22px; height: 22px; accent-color: var(--good); flex: none; }
+  .opt-edit .k { font-weight: 900; width: 18px; color: var(--muted); }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; flex-wrap: wrap; }
+  .hint { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .radio-row { display: flex; gap: 18px; }
+  .radio-row label { display: flex; align-items: center; gap: 6px; margin: 0; font-weight: 700; }
+
+  @media (max-width: 720px) {
+    .kpis { grid-template-columns: 1fr 1fr; }
+    .grid2 { grid-template-columns: 1fr; }
+    .hide-sm { display: none; }
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* ================= Seed question bank (Stage 6) =================
+   Each question: id, topic, type ('mcq' | 'tf' | 'fill'), q, options (mcq), answer
+   (mcq: option index, tf: true/false, fill: list of accepted answers), explanation. */
+const SEED_TOPICS = [
+  { id: "s6-heart",  stage: 6, strand: "bio",   name: "Heart, lungs and circulation" },
+  { id: "s6-digest", stage: 6, strand: "bio",   name: "The digestive system" },
+  { id: "s6-food",   stage: 6, strand: "bio",   name: "Food webs and microorganisms" },
+  { id: "s6-change", stage: 6, strand: "chem",  name: "Reversible and irreversible changes" },
+  { id: "s6-mix",    stage: 6, strand: "chem",  name: "Dissolving and separating mixtures" },
+  { id: "s6-force",  stage: 6, strand: "phys",  name: "Forces, mass and weight" },
+  { id: "s6-elec",   stage: 6, strand: "phys",  name: "Electrical circuits" },
+  { id: "s6-earth",  stage: 6, strand: "earth", name: "Tectonic plates and rocks" }
+];
+
+const SEED_QUESTIONS = [
+  // Heart, lungs and circulation
+  { id: "h1", topic: "s6-heart", type: "mcq", q: "Which organ pumps blood around the body?",
+    options: ["Lungs", "Heart", "Kidneys", "Stomach"], answer: 1,
+    explanation: "The heart is a muscle that pumps blood through blood vessels to every part of the body. The lungs take in oxygen, but they do not pump blood." },
+  { id: "h2", topic: "s6-heart", type: "mcq", q: "Which blood vessels carry blood away from the heart?",
+    options: ["Veins", "Arteries", "Nerves", "Capillaries"], answer: 1,
+    explanation: "Arteries carry blood away from the heart. Veins carry blood back to the heart. Capillaries are tiny vessels that connect them." },
+  { id: "h3", topic: "s6-heart", type: "mcq", q: "Which gas passes from the air in the lungs into the blood?",
+    options: ["Carbon dioxide", "Nitrogen", "Oxygen", "Water vapour"], answer: 2,
+    explanation: "In the lungs, oxygen moves into the blood. Carbon dioxide moves the other way, out of the blood, and we breathe it out." },
+  { id: "h4", topic: "s6-heart", type: "tf", q: "Your heart usually beats faster when you exercise.", answer: true,
+    explanation: "When you exercise, your muscles need more oxygen. The heart beats faster to carry more blood, and oxygen, to the muscles." },
+  { id: "h5", topic: "s6-heart", type: "fill", q: "The heart and lungs are protected by the ____ cage.", answer: ["rib", "ribs"],
+    explanation: "The rib cage is made of bones called ribs. It protects the heart and lungs from injury." },
+
+  // Digestive system
+  { id: "d1", topic: "s6-digest", type: "mcq", q: "In which part of the digestive system are most nutrients absorbed into the blood?",
+    options: ["Stomach", "Oesophagus", "Small intestine", "Large intestine"], answer: 2,
+    explanation: "The small intestine is long and has a huge surface area, so digested food passes into the blood there. The large intestine mainly absorbs water." },
+  { id: "d2", topic: "s6-digest", type: "mcq", q: "After you swallow, food travels from the mouth to the stomach through the…",
+    options: ["Oesophagus", "Small intestine", "Windpipe (trachea)", "Liver"], answer: 0,
+    explanation: "The oesophagus (food pipe) is a muscular tube that pushes food down from the mouth to the stomach. The trachea carries air to the lungs." },
+  { id: "d3", topic: "s6-digest", type: "mcq", q: "What does the large intestine mainly absorb?",
+    options: ["Water", "Oxygen", "Protein", "Blood"], answer: 0,
+    explanation: "Most nutrients have already been absorbed in the small intestine. The large intestine takes water back into the body, leaving solid waste." },
+  { id: "d4", topic: "s6-digest", type: "tf", q: "Digestion begins in the mouth.", answer: true,
+    explanation: "Teeth break food into small pieces, and saliva starts to break it down chemically. So digestion starts in the mouth." },
+  { id: "d5", topic: "s6-digest", type: "mcq", q: "Which organ mixes food with acid and churns it?",
+    options: ["Heart", "Stomach", "Lungs", "Kidneys"], answer: 1,
+    explanation: "The stomach has strong muscle walls that churn food and mix it with acid and digestive juices." },
+
+  // Food webs and microorganisms
+  { id: "f1", topic: "s6-food", type: "mcq", q: "Look at this food chain: grass → grasshopper → frog → snake. If all the snakes are removed, what is most likely to happen first?",
+    options: ["The number of frogs increases", "The number of frogs decreases", "The grass stops growing", "Nothing changes"], answer: 0,
+    explanation: "Snakes eat frogs. With no snakes, fewer frogs are eaten, so the frog population grows." },
+  { id: "f2", topic: "s6-food", type: "mcq", q: "What is always at the start of a food chain?",
+    options: ["A predator", "A producer, such as a green plant", "A decomposer", "A herbivore"], answer: 1,
+    explanation: "Food chains start with a producer. Green plants make their own food using energy from sunlight." },
+  { id: "f3", topic: "s6-food", type: "mcq", q: "What do decomposers do?",
+    options: ["Make food from sunlight", "Hunt other animals", "Break down dead plants and animals", "Pump blood"], answer: 2,
+    explanation: "Decomposers, such as some bacteria and fungi, break down dead material. This returns nutrients to the soil." },
+  { id: "f4", topic: "s6-food", type: "tf", q: "All microorganisms are harmful to humans.", answer: false,
+    explanation: "Some microorganisms cause disease, but many are useful. For example, yeast helps bread rise and some bacteria help make yoghurt." },
+  { id: "f5", topic: "s6-food", type: "fill", q: "The arrows in a food chain show the direction that ____ flows.", answer: ["energy", "the energy", "food energy"],
+    explanation: "Each arrow means 'is eaten by'. It shows energy passing from one living thing to the next." },
+
+  // Reversible and irreversible changes
+  { id: "c1", topic: "s6-change", type: "tf", q: "Melting chocolate is an irreversible change.", answer: false,
+    explanation: "Melted chocolate becomes solid again when it cools, so the change can be reversed." },
+  { id: "c2", topic: "s6-change", type: "mcq", q: "Which of these is an irreversible change?",
+    options: ["Ice melting", "Salt dissolving in water", "Wood burning", "Water boiling"], answer: 2,
+    explanation: "Burning makes new materials such as ash and smoke, which cannot be turned back into wood. The other changes can be reversed." },
+  { id: "c3", topic: "s6-change", type: "mcq", q: "Which of these is a reversible change?",
+    options: ["Baking a cake", "Water freezing into ice", "Frying an egg", "An iron nail rusting"], answer: 1,
+    explanation: "Ice can melt back into water, so freezing is reversible. Baking, frying and rusting all make new materials." },
+  { id: "c4", topic: "s6-change", type: "tf", q: "When iron rusts, a new material is made.", answer: true,
+    explanation: "Iron reacts with water and oxygen to make rust, a new material. You cannot easily turn rust back into iron." },
+  { id: "c5", topic: "s6-change", type: "mcq", q: "Why is baking a cake an irreversible change?",
+    options: ["The cake gets bigger", "New materials are made", "The cake gets hot", "The ingredients are mixed"], answer: 1,
+    explanation: "Heating the mixture makes new materials. You cannot get the raw eggs, flour and sugar back from the cake." },
+
+  // Dissolving and separating mixtures
+  { id: "m1", topic: "s6-mix", type: "mcq", q: "Sam wants to find out if the temperature of water changes how fast sugar dissolves. For a fair test, what must he keep the same?",
+    options: ["The temperature of the water", "The amount of sugar and the amount of water", "The time it takes to dissolve", "Nothing"], answer: 1,
+    explanation: "Only the temperature should change. The time is what Sam measures. Everything else, like the amounts of sugar and water, must stay the same." },
+  { id: "m2", topic: "s6-mix", type: "mcq", q: "Which method is best for separating sand from water?",
+    options: ["Filtering", "Using a magnet", "Freezing", "Stirring"], answer: 0,
+    explanation: "Sand does not dissolve. A filter lets the water pass through but traps the sand grains." },
+  { id: "m3", topic: "s6-mix", type: "mcq", q: "How can you get salt back from salty water?",
+    options: ["Filter it", "Let the water evaporate", "Use a magnet", "Shake it"], answer: 1,
+    explanation: "Salt is dissolved, so it passes through a filter. When the water evaporates, the salt is left behind as crystals." },
+  { id: "m4", topic: "s6-mix", type: "tf", q: "Sugar usually dissolves faster in hot water than in cold water.", answer: true,
+    explanation: "In hot water the particles move faster, so the sugar dissolves more quickly." },
+  { id: "m5", topic: "s6-mix", type: "fill", q: "A material that dissolves in water is called ____.", answer: ["soluble"],
+    explanation: "Soluble materials, like salt and sugar, dissolve. Materials that do not dissolve, like sand, are insoluble." },
+
+  // Forces, mass and weight
+  { id: "p1", topic: "s6-force", type: "fill", q: "An apple has a mass of 0.2 kg. On Earth, gravity pulls with about 10 N on every 1 kg. The weight of the apple is ____ N.", answer: ["2", "2n", "2 n"],
+    explanation: "Weight = mass × 10 N/kg, so 0.2 × 10 = 2 N. Mass is measured in kilograms; weight is a force measured in newtons." },
+  { id: "p2", topic: "s6-force", type: "mcq", q: "A box is pushed to the right with a force of 20 N. Friction acts to the left with a force of 20 N. What is true?",
+    options: ["The forces are balanced, so the box's speed does not change", "The box speeds up to the right", "The box speeds up to the left", "The box gets heavier"], answer: 0,
+    explanation: "Equal forces in opposite directions are balanced. Balanced forces do not change how an object is moving." },
+  { id: "p3", topic: "s6-force", type: "mcq", q: "Which equipment do we use to measure weight in newtons?",
+    options: ["A ruler", "A thermometer", "A forcemeter (newton meter)", "A measuring cylinder"], answer: 2,
+    explanation: "A forcemeter has a spring inside. The heavier the object, the more the spring stretches, showing the force in newtons." },
+  { id: "p4", topic: "s6-force", type: "tf", q: "An astronaut's mass is smaller on the Moon than on Earth.", answer: false,
+    explanation: "Mass is the amount of matter, so it stays the same. Weight is smaller on the Moon because the Moon's gravity is weaker." },
+  { id: "p5", topic: "s6-force", type: "mcq", q: "Which force makes a parachute fall slowly?",
+    options: ["Magnetism", "Air resistance", "Gravity", "Upthrust from water"], answer: 1,
+    explanation: "The large canopy pushes against lots of air. Air resistance acts upwards and slows the fall. Gravity is the force pulling it down." },
+
+  // Electrical circuits
+  { id: "e1", topic: "s6-elec", type: "mcq", q: "There is a gap in a circuit. Which object placed in the gap would make the bulb light up?",
+    options: ["Plastic ruler", "Wooden pencil (unsharpened end)", "Steel paper clip", "Rubber band"], answer: 2,
+    explanation: "Steel is a metal, and metals are electrical conductors. Plastic, wood and rubber are insulators, so they stop the current." },
+  { id: "e2", topic: "s6-elec", type: "mcq", q: "What happens to a bulb if you add another cell (battery) to a simple circuit?",
+    options: ["It gets brighter", "It gets dimmer", "It stays the same", "It changes colour"], answer: 0,
+    explanation: "More cells push more current around the circuit, so the bulb shines more brightly." },
+  { id: "e3", topic: "s6-elec", type: "mcq", q: "You add a second bulb in a line (in series) with the same cell. What happens to the bulbs?",
+    options: ["Both are brighter", "Both are dimmer", "Only one lights up", "Nothing changes"], answer: 1,
+    explanation: "The same cell now has to push current through two bulbs, so less current flows and each bulb is dimmer." },
+  { id: "e4", topic: "s6-elec", type: "tf", q: "A circuit must be a complete loop for electricity to flow.", answer: true,
+    explanation: "If there is any gap in the loop, the current cannot flow and the components will not work." },
+  { id: "e5", topic: "s6-elec", type: "fill", q: "Materials that do not let electricity pass through them are called electrical ____.", answer: ["insulators", "insulator"],
+    explanation: "Insulators, such as plastic and rubber, stop electricity. That is why wires are covered in plastic." },
+
+  // Tectonic plates and rocks
+  { id: "r1", topic: "s6-earth", type: "mcq", q: "Where do most earthquakes and volcanoes happen?",
+    options: ["In the middle of tectonic plates", "At the edges of tectonic plates", "Only near the North Pole", "Only in deserts"], answer: 1,
+    explanation: "Tectonic plates move against each other at their edges. This movement causes earthquakes and lets magma reach the surface." },
+  { id: "r2", topic: "s6-earth", type: "mcq", q: "What is the thin, rocky outer layer of the Earth called?",
+    options: ["The core", "The mantle", "The crust", "The atmosphere"], answer: 2,
+    explanation: "The crust is the outer layer we live on. Below it is the mantle, and the core is at the centre." },
+  { id: "r3", topic: "s6-earth", type: "mcq", q: "In which type of rock are fossils usually found?",
+    options: ["Igneous rock", "Sedimentary rock", "Metamorphic rock", "Lava"], answer: 1,
+    explanation: "Sedimentary rock forms when layers of sediment build up slowly. Dead plants and animals can be trapped in the layers and become fossils." },
+  { id: "r4", topic: "s6-earth", type: "tf", q: "Tectonic plates move only a few centimetres each year.", answer: true,
+    explanation: "Plates move very slowly, about as fast as your fingernails grow. Over millions of years this moves continents." },
+  { id: "r5", topic: "s6-earth", type: "fill", q: "Hot, melted rock below the Earth's surface is called ____.", answer: ["magma"],
+    explanation: "Melted rock underground is magma. When it comes out of a volcano onto the surface, it is called lava." }
+];
+
+
+
+/* ================= Seed question bank (Stages 1-5) ================= */
+SEED_TOPICS.push(
+  { id: "s1-living",   stage: 1, strand: "bio",   name: "Living things and our senses" },
+  { id: "s1-material", stage: 1, strand: "chem",  name: "Everyday materials" },
+  { id: "s1-push",     stage: 1, strand: "phys",  name: "Pushes, pulls and sounds" },
+  { id: "s1-sky",      stage: 1, strand: "earth", name: "Day, night, land and water" },
+
+  { id: "s2-needs",    stage: 2, strand: "bio",   name: "What plants and animals need" },
+  { id: "s2-material", stage: 2, strand: "chem",  name: "Changing and sorting materials" },
+  { id: "s2-light",    stage: 2, strand: "phys",  name: "Light, dark and electricity" },
+  { id: "s2-weather",  stage: 2, strand: "earth", name: "Weather, seasons and soil" },
+
+  { id: "s3-plants",   stage: 3, strand: "bio",   name: "Parts of plants" },
+  { id: "s3-skeleton", stage: 3, strand: "bio",   name: "Skeletons, muscles and animal groups" },
+  { id: "s3-magnets",  stage: 3, strand: "phys",  name: "Magnets, forces and shadows" },
+  { id: "s3-rocks",    stage: 3, strand: "earth", name: "Rocks, soils and Earth's spin" },
+
+  { id: "s4-organs",   stage: 4, strand: "bio",   name: "Human organs" },
+  { id: "s4-habitats", stage: 4, strand: "bio",   name: "Habitats and food chains" },
+  { id: "s4-states",   stage: 4, strand: "chem",  name: "Solids, liquids and gases" },
+  { id: "s4-sound",    stage: 4, strand: "phys",  name: "Sound and simple circuits" },
+  { id: "s4-earth",    stage: 4, strand: "earth", name: "Earth's layers, volcanoes and earthquakes" },
+
+  { id: "s5-plants",   stage: 5, strand: "bio",   name: "Flowering plant life cycles" },
+  { id: "s5-water",    stage: 5, strand: "chem",  name: "Evaporation and the water cycle" },
+  { id: "s5-forces",   stage: 5, strand: "phys",  name: "Light, gravity and friction" },
+  { id: "s5-space",    stage: 5, strand: "earth", name: "Earth, Sun, Moon and the Solar System" }
+);
+
+function mcq(id, topic, q, options, answer, explanation) { return { id, topic, type: "mcq", q, options, answer, explanation }; }
+function tf(id, topic, q, answer, explanation) { return { id, topic, type: "tf", q, answer, explanation }; }
+function fill(id, topic, q, answer, explanation) { return { id, topic, type: "fill", q, answer, explanation }; }
+
+SEED_QUESTIONS.push(
+  // ---------- Stage 1 ----------
+  mcq("a1", "s1-living", "Which of these is a living thing?", ["A rock", "A cat", "A chair", "A ball"], 1,
+    "A cat is alive. It eats, breathes, grows and moves by itself. Rocks, chairs and balls do not."),
+  mcq("a2", "s1-living", "Which part of your body do you use to hear?", ["Eyes", "Ears", "Nose", "Tongue"], 1,
+    "We hear with our ears. We see with our eyes, smell with our nose and taste with our tongue."),
+  tf("a3", "s1-living", "A plant is a living thing.", true,
+    "Plants are alive. They grow, need water and make new plants."),
+  mcq("a4", "s1-living", "Which part of a plant takes in water from the soil?", ["Flower", "Leaf", "Root", "Petal"], 2,
+    "Roots grow under the ground. They take in water and hold the plant in place."),
+  fill("a5", "s1-living", "We use our ____ to see.", ["eyes", "eye"],
+    "Our eyes are the sense organs for sight."),
+
+  mcq("a6", "s1-material", "Windows are usually made of glass. Why?", ["Glass is see-through", "Glass is soft", "Glass is bendy", "Glass is fluffy"], 0,
+    "Glass is transparent (see-through), so light can come into the room."),
+  mcq("a7", "s1-material", "Which material is soft?", ["Stone", "Metal", "Wool", "Glass"], 2,
+    "Wool is soft and warm. Stone, metal and glass are hard."),
+  tf("a8", "s1-material", "A metal spoon is made of wood.", false,
+    "A metal spoon is made of metal, not wood. Some spoons are wooden, but this one is metal."),
+  mcq("a9", "s1-material", "Which object is made of fabric?", ["A T-shirt", "A brick", "A coin", "A window"], 0,
+    "A T-shirt is made of fabric, such as cotton. Bricks are clay, coins are metal and windows are glass."),
+  mcq("a10", "s1-material", "Which material is best for a raincoat?", ["Paper", "Plastic", "Cotton wool", "Cardboard"], 1,
+    "Plastic is waterproof, so it keeps the rain out. Paper, cotton wool and cardboard soak up water."),
+
+  mcq("a11", "s1-push", "When you open a drawer towards you, you are giving it a…", ["Push", "Pull", "Twist", "Squash"], 1,
+    "Moving something towards you is a pull. Moving it away from you is a push."),
+  mcq("a12", "s1-push", "When you kick a ball, you give it a…", ["Push", "Pull", "Sound", "Light"], 0,
+    "Kicking moves the ball away from you, so it is a push."),
+  tf("a13", "s1-push", "A harder push makes a toy car go further.", true,
+    "A bigger push gives the car more force, so it travels further."),
+  mcq("a14", "s1-push", "Which of these makes a sound?", ["A drum being hit", "A closed book", "A pillow", "A pencil lying on a desk"], 0,
+    "Hitting a drum makes it shake (vibrate), and that makes a sound."),
+  fill("a15", "s1-push", "We hear sounds with our ____.", ["ears", "ear"],
+    "Our ears are the sense organs for hearing."),
+
+  mcq("a16", "s1-sky", "When can we see the Sun in the sky?", ["During the day", "At midnight", "Never", "Only when it rains"], 0,
+    "The Sun lights up the sky in the daytime. At night our part of the Earth faces away from the Sun."),
+  tf("a17", "s1-sky", "It is safe to look straight at the Sun.", false,
+    "Never look straight at the Sun. Its light is so strong that it can hurt your eyes."),
+  mcq("a18", "s1-sky", "What can we often see in the sky at night?", ["The Moon and stars", "The Sun", "A rainbow", "Sand"], 0,
+    "On a clear night we can see the Moon and the stars."),
+  mcq("a19", "s1-sky", "Which of these is mostly water?", ["The sea", "A mountain", "A desert", "A forest"], 0,
+    "The sea is a huge area of salty water. Mountains, deserts and forests are land."),
+  tf("a20", "s1-sky", "The Earth has both land and water.", true,
+    "The Earth has land, like hills and fields, and water, like seas, lakes and rivers."),
+
+  // ---------- Stage 2 ----------
+  mcq("b1", "s2-needs", "What do plants need to grow well?", ["Water and light", "Only darkness", "Sugar and salt", "Nothing"], 0,
+    "Plants need water and light to stay healthy and grow. They also need air and warmth."),
+  mcq("b2", "s2-needs", "What do all animals need to stay alive?", ["Food, water and air", "Toys", "Books", "Television"], 0,
+    "All animals, including humans, need food, water and air to live."),
+  tf("b3", "s2-needs", "A plant kept in a dark cupboard grows healthy and green.", false,
+    "Without light a plant becomes pale and weak. Plants need light to grow well."),
+  mcq("b4", "s2-needs", "Which is the healthiest snack?", ["An apple", "Sweets", "Crisps", "A fizzy drink"], 0,
+    "Fruit like an apple gives your body vitamins and fibre. Sweets and fizzy drinks have lots of sugar."),
+  fill("b5", "s2-needs", "A seed can grow into a new ____.", ["plant"],
+    "Plants make seeds. With water and warmth, a seed grows into a new plant."),
+
+  mcq("b6", "s2-material", "Which material can be stretched?", ["An elastic band", "A glass cup", "A brick", "A wooden block"], 0,
+    "Elastic (rubber) bands stretch and then go back to their shape."),
+  mcq("b7", "s2-material", "Which material comes from nature?", ["Wool", "Plastic", "Glass", "Nylon"], 0,
+    "Wool comes from sheep, so it is natural. Plastic, glass and nylon are made by people."),
+  tf("b8", "s2-material", "Paper can be folded and bent.", true,
+    "Paper is thin and flexible, so it is easy to fold and bend."),
+  mcq("b9", "s2-material", "You squash a ball of clay. What changes?", ["Its shape", "What material it is", "It turns into metal", "It becomes see-through"], 0,
+    "Squashing changes the shape of the clay. It is still clay."),
+  mcq("b10", "s2-material", "Which material is made by people (man-made)?", ["Plastic", "Wood", "Stone", "Wool"], 0,
+    "Plastic is made in factories. Wood, stone and wool come from nature."),
+
+  mcq("b11", "s2-light", "Which of these is a light source?", ["The Sun", "The Moon", "A mirror", "A window"], 0,
+    "The Sun makes its own light. The Moon and mirrors only reflect light, and a window lets light through."),
+  tf("b12", "s2-light", "We need light to see things.", true,
+    "Light bounces off objects into our eyes. Without light we cannot see."),
+  mcq("b13", "s2-light", "Which of these uses electricity?", ["A torch", "A bicycle", "A book", "A spoon"], 0,
+    "A torch uses electricity from its batteries to make light."),
+  tf("b14", "s2-light", "It is safe to push your fingers into a plug socket.", false,
+    "Never put fingers or objects into a socket. Mains electricity is very dangerous."),
+  mcq("b15", "s2-light", "In a room with no light at all, what can you see?", ["Nothing", "Bright colours", "Rainbows", "Everything"], 0,
+    "Darkness is the absence of light. With no light reaching our eyes, we cannot see anything."),
+
+  mcq("b16", "s2-weather", "Which instrument measures temperature?", ["A thermometer", "A ruler", "A clock", "Weighing scales"], 0,
+    "A thermometer measures how hot or cold something is, in degrees Celsius (°C)."),
+  mcq("b17", "s2-weather", "What falls from clouds?", ["Rain", "Sand", "Leaves", "Stones"], 0,
+    "Clouds are made of tiny water droplets. When they join and get heavy, they fall as rain."),
+  tf("b18", "s2-weather", "In many countries, summer is warmer than winter.", true,
+    "In places with four seasons, summer is the warmest season and winter is the coldest."),
+  mcq("b19", "s2-weather", "What is best to wear on a cold, snowy day?", ["A coat, hat and gloves", "Shorts", "A swimsuit", "Sandals"], 0,
+    "Thick, warm clothes keep our body heat in when it is cold."),
+  fill("b20", "s2-weather", "Rocks slowly break into tiny pieces that help make ____.", ["soil"],
+    "Soil is made from tiny bits of rock mixed with rotting plants, air and water."),
+
+  // ---------- Stage 3 ----------
+  mcq("c1x", "s3-plants", "What does the stem of a plant do?", ["Carries water from the roots to the leaves", "Makes seeds", "Attracts insects", "Makes the soil"], 0,
+    "The stem holds the plant up and carries water from the roots to the leaves and flowers."),
+  mcq("c2x", "s3-plants", "Which part of a plant makes its food?", ["The leaves", "The roots", "The seeds", "The soil"], 0,
+    "Leaves use sunlight, water and air to make food for the plant."),
+  tf("c3x", "s3-plants", "Roots hold a plant firmly in the ground.", true,
+    "Roots anchor the plant so wind and rain do not knock it over. They also take in water."),
+  mcq("c4x", "s3-plants", "A green plant is kept in the dark for a week. What will most likely happen to its leaves?", ["They turn pale or yellow", "They turn darker green", "They grow flowers", "They turn into roots"], 0,
+    "Without light the plant cannot make food, so its leaves lose their green colour."),
+  fill("c5x", "s3-plants", "Plants need ____, water and air to make their food.", ["light", "sunlight"],
+    "Light is the energy plants use to make food in their leaves."),
+
+  mcq("c6x", "s3-skeleton", "What does the skull protect?", ["The brain", "The heart", "The stomach", "The lungs"], 0,
+    "The skull is a hard case of bone around the brain."),
+  mcq("c7x", "s3-skeleton", "Which animal is a vertebrate (has a backbone)?", ["Fish", "Worm", "Snail", "Jellyfish"], 0,
+    "Fish have a backbone, so they are vertebrates. Worms, snails and jellyfish have no backbone."),
+  tf("c8x", "s3-skeleton", "Muscles can pull bones but cannot push them.", true,
+    "Muscles only pull. That is why they work in pairs: one pulls a bone one way, and the other pulls it back."),
+  mcq("c9x", "s3-skeleton", "Which of these is NOT a job of the skeleton?", ["Digesting food", "Supporting the body", "Protecting organs", "Helping us move"], 0,
+    "The skeleton supports, protects and helps us move. Digesting food is done by the digestive system."),
+  fill("c10x", "s3-skeleton", "An animal without a backbone is called an ____.", ["invertebrate"],
+    "Invertebrates, like insects, worms and snails, have no backbone."),
+
+  mcq("c11x", "s3-magnets", "Which object is attracted to a magnet?", ["An iron nail", "A plastic cup", "A wooden spoon", "A rubber eraser"], 0,
+    "Iron is a magnetic material. Plastic, wood and rubber are not magnetic."),
+  mcq("c12x", "s3-magnets", "What happens when you put two north poles of magnets together?", ["They push apart (repel)", "They pull together (attract)", "They melt", "Nothing at all"], 0,
+    "Like poles repel. North and north push away from each other."),
+  tf("c13x", "s3-magnets", "All metals are attracted to magnets.", false,
+    "Only some metals, such as iron, nickel and steel, are magnetic. Copper and aluminium are not."),
+  mcq("c14x", "s3-magnets", "How is a shadow made?", ["An object blocks the light", "Light passes through glass", "It starts to rain", "The object gets warm"], 0,
+    "Light travels in straight lines. When an opaque object blocks it, a dark shadow forms behind it."),
+  fill("c15x", "s3-magnets", "Opposite poles of two magnets ____ each other.", ["attract", "pull"],
+    "North and south poles attract (pull towards) each other."),
+
+  mcq("c16x", "s3-rocks", "Why do we have day and night?", ["The Earth spins", "The Sun moves around the Earth", "Clouds cover the Sun", "The Moon blocks the Sun"], 0,
+    "The Earth spins on its axis. The side facing the Sun has day; the side facing away has night."),
+  mcq("c17x", "s3-rocks", "How long does the Earth take to spin around once?", ["About 24 hours", "One week", "One month", "One year"], 0,
+    "One full spin of the Earth takes about 24 hours, which is one day."),
+  tf("c18x", "s3-rocks", "Some rocks let water soak into them.", true,
+    "Rocks that let water soak in, like chalk and sandstone, are called permeable."),
+  mcq("c19x", "s3-rocks", "What is soil made from?", ["Tiny pieces of rock and rotting plants", "Only water", "Plastic", "Metal"], 0,
+    "Soil is a mixture of tiny rock pieces, rotting plant and animal matter (humus), air and water."),
+  mcq("c20x", "s3-rocks", "Which rock is very hard and often used for buildings?", ["Granite", "Chalk", "Clay", "Sand"], 0,
+    "Granite is a very hard, strong rock, so it is used for buildings and kitchen tops."),
+
+  // ---------- Stage 4 ----------
+  mcq("d1x", "s4-organs", "Which organ controls the whole body?", ["The brain", "The liver", "The stomach", "The skin"], 0,
+    "The brain sends and receives messages through nerves to control the body."),
+  mcq("d2x", "s4-organs", "Which organs do we breathe with?", ["The lungs", "The kidneys", "The heart", "The brain"], 0,
+    "The lungs take in oxygen from the air and get rid of carbon dioxide."),
+  tf("d3x", "s4-organs", "The kidneys clean the blood and make urine.", true,
+    "The kidneys filter waste out of the blood. The waste leaves the body as urine."),
+  mcq("d4x", "s4-organs", "What is the largest organ of the human body?", ["The skin", "The heart", "The brain", "The stomach"], 0,
+    "The skin covers the whole body. It protects us and helps control our temperature."),
+  fill("d5x", "s4-organs", "The ____ pumps blood around the body.", ["heart"],
+    "The heart is a muscle that keeps blood moving around the body."),
+
+  mcq("d6x", "s4-habitats", "Which animal is best suited to living in a cold, icy habitat?", ["Polar bear", "Camel", "Parrot", "Lizard"], 0,
+    "Polar bears have thick fur and a layer of fat to keep warm in the Arctic."),
+  mcq("d7x", "s4-habitats", "In the food chain leaf → caterpillar → bird, what is the caterpillar?", ["A consumer", "A producer", "A decomposer", "A plant"], 0,
+    "The caterpillar eats the leaf, so it is a consumer. The leaf is the producer."),
+  tf("d8x", "s4-habitats", "A habitat is the place where a plant or animal lives.", true,
+    "A habitat gives living things food, water and shelter. Examples are ponds, forests and deserts."),
+  mcq("d9x", "s4-habitats", "What is a classification key used for?", ["Identifying living things", "Measuring temperature", "Building circuits", "Telling the time"], 0,
+    "A key asks yes/no questions about features to help you name a living thing."),
+  fill("d10x", "s4-habitats", "An animal that hunts and eats other animals is called a ____.", ["predator", "carnivore"],
+    "A predator hunts other animals (its prey) for food."),
+
+  mcq("d11x", "s4-states", "Which of these is a gas?", ["Steam", "Ice", "Milk", "Wood"], 0,
+    "Steam is water as a gas. Ice and wood are solids, and milk is a liquid."),
+  mcq("d12x", "s4-states", "What happens when ice melts?", ["A solid turns into a liquid", "A liquid turns into a gas", "A gas turns into a liquid", "A liquid turns into a solid"], 0,
+    "Melting is when a solid is heated and becomes a liquid."),
+  tf("d13x", "s4-states", "A liquid takes the shape of its container.", true,
+    "Liquids can flow, so they spread out to fill the bottom of whatever container they are in."),
+  mcq("d14x", "s4-states", "At what temperature does pure water freeze?", ["0 °C", "100 °C", "50 °C", "10 °C"], 0,
+    "Pure water freezes at 0 °C and boils at 100 °C."),
+  fill("d15x", "s4-states", "When a liquid turns into a solid, it is called ____.", ["freezing", "solidifying"],
+    "Freezing is the opposite of melting. The liquid cools and becomes a solid."),
+
+  mcq("d16x", "s4-sound", "How are sounds made?", ["Objects vibrate", "Objects freeze", "Objects melt", "Objects shine"], 0,
+    "All sounds are made by vibrations: something moving back and forth very quickly."),
+  mcq("d17x", "s4-sound", "You make a guitar string shorter. What happens to the pitch?", ["It gets higher", "It gets lower", "It stays the same", "There is no sound"], 0,
+    "A shorter string vibrates faster, which makes a higher pitch."),
+  tf("d18x", "s4-sound", "Sound can travel through empty space where there is no air.", false,
+    "Sound needs something to travel through, such as air, water or solids. Space is silent."),
+  mcq("d19x", "s4-sound", "What does a switch do in a circuit?", ["Opens or closes the circuit", "Makes electricity", "Stores light", "Measures sound"], 0,
+    "A closed switch completes the circuit so current flows. An open switch makes a gap and stops it."),
+  fill("d20x", "s4-sound", "Sound travels to our ears as ____.", ["vibrations", "vibration", "sound waves", "waves"],
+    "Vibrations pass through the air to our ears, and our brain hears them as sound."),
+
+  mcq("d21x", "s4-earth", "What is the centre of the Earth called?", ["The core", "The crust", "The mantle", "The ocean"], 0,
+    "The Earth has three main layers: the crust on the outside, the mantle, and the very hot core in the centre."),
+  mcq("d22x", "s4-earth", "What do we call melted rock that flows out of a volcano?", ["Lava", "Fossil", "Granite", "Soil"], 0,
+    "Melted rock is called magma underground and lava once it reaches the surface."),
+  tf("d23x", "s4-earth", "We live on the Earth's crust.", true,
+    "The crust is the thin, rocky outer layer where all land and oceans are."),
+  mcq("d24x", "s4-earth", "What is a sudden, strong shaking of the ground called?", ["An earthquake", "An eclipse", "A rainbow", "A drought"], 0,
+    "Earthquakes happen when rocks deep underground suddenly move."),
+  fill("d25x", "s4-earth", "The layer between the Earth's crust and core is the ____.", ["mantle"],
+    "The mantle is a thick layer of hot, slowly moving rock."),
+
+  // ---------- Stage 5 ----------
+  mcq("e1x", "s5-plants", "What is it called when pollen moves from one flower to another?", ["Pollination", "Germination", "Seed dispersal", "Evaporation"], 0,
+    "Pollination is when pollen is carried, often by insects or wind, from the stamen to the stigma."),
+  mcq("e2x", "s5-plants", "Which animal often helps to pollinate flowers?", ["Bees", "Fish", "Snails", "Worms"], 0,
+    "Bees visit flowers for nectar and carry pollen between them on their bodies."),
+  tf("e3x", "s5-plants", "Some seeds are spread by the wind.", true,
+    "Dandelion and sycamore seeds are light or have 'wings', so the wind carries them far away."),
+  mcq("e4x", "s5-plants", "What is it called when a seed starts to grow?", ["Germination", "Pollination", "Fertilisation", "Condensation"], 0,
+    "Germination is when a seed begins to grow a root and shoot. It needs water and warmth."),
+  fill("e5x", "s5-plants", "The male part of a flower, which makes pollen, is the ____.", ["stamen", "anther", "stamens"],
+    "The stamen (with the anther at its top) makes pollen. The female part is the carpel, with the stigma at the top."),
+
+  mcq("e6x", "s5-water", "Water droplets appear on the outside of a cold glass. What is this called?", ["Condensation", "Evaporation", "Melting", "Freezing"], 0,
+    "Water vapour in the air cools when it touches the cold glass and turns back into liquid water."),
+  mcq("e7x", "s5-water", "On which day would a puddle dry up fastest?", ["A warm, windy day", "A cold, still day", "A cold night", "A cloudy, cold morning"], 0,
+    "Heat and wind both make water evaporate faster."),
+  tf("e8x", "s5-water", "In the water cycle, water vapour cools to form clouds.", true,
+    "Rising water vapour cools high in the sky and condenses into tiny droplets, which make clouds."),
+  mcq("e9x", "s5-water", "At what temperature does pure water boil?", ["100 °C", "0 °C", "50 °C", "37 °C"], 0,
+    "Pure water boils at 100 °C and freezes at 0 °C. 37 °C is normal body temperature."),
+  fill("e10x", "s5-water", "When liquid water turns into water vapour, it is called ____.", ["evaporation", "evaporating"],
+    "Evaporation is when a liquid changes into a gas. It happens faster when it is warm."),
+
+  mcq("e11x", "s5-forces", "Which surface reflects light best?", ["A mirror", "Black cloth", "A brick", "Cardboard"], 0,
+    "Smooth, shiny surfaces like mirrors reflect light very well."),
+  mcq("e12x", "s5-forces", "Which force pulls objects down towards the Earth?", ["Gravity", "Friction", "Magnetism", "Air resistance"], 0,
+    "Gravity pulls everything towards the centre of the Earth. That is why things fall."),
+  tf("e13x", "s5-forces", "There is more friction on a rough surface than on a smooth one.", true,
+    "Rough surfaces grip more, so they create more friction and slow things down more."),
+  mcq("e14x", "s5-forces", "Why is a playground slide made very smooth?", ["To reduce friction", "To increase gravity", "To make it warm", "To make it heavier"], 0,
+    "A smooth surface has less friction, so you slide down faster."),
+  fill("e15x", "s5-forces", "Light travels in ____ lines.", ["straight"],
+    "Light travels in straight lines. That is why it cannot bend around objects, and shadows form."),
+
+  mcq("e16x", "s5-space", "How long does the Earth take to travel once around the Sun?", ["About 365 days", "24 hours", "One week", "One month"], 0,
+    "One orbit of the Sun takes about 365 days, which is one year."),
+  mcq("e17x", "s5-space", "Which planet is closest to the Sun?", ["Mercury", "Venus", "Earth", "Mars"], 0,
+    "The order from the Sun is Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus and Neptune."),
+  tf("e18x", "s5-space", "The Moon makes its own light.", false,
+    "The Moon reflects light from the Sun. It does not make its own light."),
+  mcq("e19x", "s5-space", "What is the Sun?", ["A star", "A planet", "A moon", "A comet"], 0,
+    "The Sun is a star: a huge ball of hot gas that gives out light and heat."),
+  fill("e20x", "s5-space", "The Moon orbits (travels around) the ____.", ["earth", "the earth"],
+    "The Moon goes around the Earth about once every 28 days.")
+);
+
+
+/* ================= Settings ================= */
+const POINTS_PER_CORRECT = 10;
+const MAX_QUESTIONS_PER_QUIZ = 10;
+/* Paste the Firebase web config here to switch from the local prototype to the shared online version.
+   Leave it as null to run the prototype that saves data in this browser only. */
+const FIREBASE_CONFIG = {
+  "apiKey": "AIzaSyCzS01ddVsaZjNMo1otIzpYcqkz12mhFDw",
+  "authDomain": "science-quest-7a4c3.firebaseapp.com",
+  "projectId": "science-quest-7a4c3",
+  "storageBucket": "science-quest-7a4c3.firebasestorage.app",
+  "messagingSenderId": "955252853118",
+  "appId": "1:955252853118:web:092b59f89397b9628ccb2f"
+};
+const MODE = FIREBASE_CONFIG ? "cloud" : "local";
+const FIREBASE_SDK = "https://www.gstatic.com/firebasejs/10.12.2/";
+const DB_KEY = "sq_db_v3";
+const SESSION_KEY = "sq_session_v3";
+const DEFAULT_PIN = "1234";
+const STRAND_LABEL = { bio: "Biology", chem: "Chemistry", phys: "Physics", earth: "Earth & Space" };
+const TYPE_LABEL = { mcq: "Multiple choice", tf: "True / false", fill: "Fill in the blank" };
+
+/* ================= Storage ================= */
+const memoryStore = {};
+const store = {
+  get(key, fallback) {
+    try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : (key in memoryStore ? memoryStore[key] : fallback); }
+    catch (e) { return key in memoryStore ? memoryStore[key] : fallback; }
+  },
+  set(key, value) {
+    memoryStore[key] = value;
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
+  }
+};
+
+/* ================= Demo data ================= */
+function rng(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+function uid(prefix) { return prefix + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+
+function seedDb(withDemo) {
+  const db = {
+    pin: DEFAULT_PIN,
+    classes: withDemo ? ["6A", "6B", "6C"] : ["1A", "2A", "3A", "4A", "5A", "6A"],
+    teachers: [],
+    topics: SEED_TOPICS.map(t => ({ ...t })),
+    questions: SEED_QUESTIONS.map(q => ({ ...q, options: q.options ? q.options.slice() : undefined, answer: Array.isArray(q.answer) ? q.answer.slice() : q.answer })),
+    students: {},
+    qstats: {}
+  };
+  if (!withDemo) return db;
+  const demo = [
+    ["Aisyah", "6A"], ["Budi", "6A"], ["Citra", "6A"], ["Dimas", "6A"], ["Eka", "6A"],
+    ["Farhan", "6B"], ["Gita", "6B"], ["Hana", "6B"], ["Indra", "6B"], ["Joko", "6B"],
+    ["Kirana", "6C"], ["Lukas", "6C"], ["Maya", "6C"], ["Nadia", "6C"], ["Omar", "6C"]
+  ];
+  const r = rng(42);
+  // Topic difficulty so the demo "weak topics" view shows something meaningful.
+  const topicSkill = { "s6-heart": .85, "s6-digest": .75, "s6-food": .8, "s6-change": .7, "s6-mix": .6, "s6-force": .45, "s6-elec": .65, "s6-earth": .55 };
+  demo.forEach(([name, cls], i) => {
+    const id = "st" + i;
+    const ability = 0.55 + r() * 0.4;
+    const st = { id, name, cls, points: 0, answered: 0, correct: 0, best: {}, attempts: {}, lastActive: null, demo: true };
+    db.topics.filter(t => +t.stage === 6).forEach(t => {
+      if (r() < 0.25) return; // not every student has tried every topic
+      const qs = db.questions.filter(q => q.topic === t.id);
+      const tries = 1 + Math.floor(r() * 3);
+      let best = 0;
+      for (let k = 0; k < tries; k++) {
+        let c = 0;
+        qs.forEach(q => {
+          const ok = r() < Math.min(.97, ability * (topicSkill[t.id] || .7) * 1.35);
+          const s = db.qstats[q.id] || (db.qstats[q.id] = { a: 0, c: 0 });
+          s.a++; if (ok) { s.c++; c++; }
+        });
+        st.answered += qs.length; st.correct += c; best = Math.max(best, c);
+      }
+      st.best[t.id] = best; st.attempts[t.id] = tries;
+    });
+    st.points = st.correct * POINTS_PER_CORRECT;
+    st.lastActive = Date.now() - Math.floor(r() * 6 * 86400000);
+    db.students[id] = st;
+  });
+  return db;
+}
+
+let db = MODE === "local" ? (store.get(DB_KEY, null) || seedDb(true)) : { classes: [], teachers: [], topics: [], questions: [], students: {}, qstats: {} };
+let session = store.get(SESSION_KEY, null); // {role:'student', id, cls} | {role:'teacher'}
+function save() { if (MODE === "local") store.set(DB_KEY, db); store.set(SESSION_KEY, session); }
+save();
+
+/* ================= Persistence (local or Firebase) ================= */
+let fs = null, auth = null;
+let cloudReady = MODE === "local", cloudError = "", bankLoaded = MODE === "local";
+let classListening = null, classLoaded = MODE === "local", classUnsub = null;
+let teacherUnsubs = [], commonUnsubs = [];
+let schoolTop = null, pendingRender = false;
+const clean = o => JSON.parse(JSON.stringify(o));
+function cloudFail(e) { console.error(e); toast("Could not save: " + (e && e.message ? e.message : e)); }
+function toast(msg) {
+  let t = document.getElementById("toast");
+  if (!t) { t = document.createElement("div"); t.id = "toast"; t.style.cssText = "position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#24324f;color:#fff;padding:12px 18px;border-radius:12px;font-weight:800;z-index:99;max-width:90vw"; document.body.appendChild(t); }
+  t.textContent = msg; t.style.display = "block";
+  clearTimeout(t._h); t._h = setTimeout(() => { t.style.display = "none"; }, 5000);
+}
+function persistBank() {
+  if (MODE === "local") return save();
+  fs.doc("meta/bank").set(clean({ topics: db.topics, questions: db.questions })).catch(cloudFail);
+}
+function persistSettings() {
+  if (MODE === "local") return save();
+  fs.doc("meta/settings").update(clean({ classes: db.classes, teachers: db.teachers })).catch(cloudFail);
+}
+function studentData(s) {
+  return clean({ name: s.name, cls: s.cls, points: s.points, answered: s.answered, correct: s.correct, best: s.best, attempts: s.attempts, lastActive: s.lastActive });
+}
+function persistStudent(s) {
+  if (MODE === "local") return save();
+  fs.collection("students").doc(s.id).set(studentData(s)).catch(cloudFail);
+}
+function removeStudentDoc(id) {
+  delete db.students[id];
+  if (MODE === "local") return save();
+  fs.collection("students").doc(id).delete().catch(cloudFail);
+}
+// Saves a student's progress after (part of) a quiz. Local mode already saved per answer.
+function flushQuiz() {
+  if (!quiz || MODE === "local") return;
+  const fresh = quiz.results.slice(quiz.flushed || 0);
+  if (!fresh.length) return;
+  quiz.flushed = quiz.results.length;
+  const u = me(); if (!u) return;
+  const d = studentData(u);
+  fs.collection("students").doc(u.id).update({ points: d.points, answered: d.answered, correct: d.correct, best: d.best, attempts: d.attempts, lastActive: d.lastActive }).catch(cloudFail);
+  if (fresh.length) {
+    const inc = firebase.firestore.FieldValue.increment;
+    const upd = {};
+    fresh.forEach(r => {
+      const cur = upd[r.q.id] || (upd[r.q.id] = { a: 0, c: 0 });
+      cur.a++; if (r.ok) cur.c++;
+    });
+    Object.keys(upd).forEach(k => { upd[k] = { a: inc(upd[k].a), c: inc(upd[k].c) }; });
+    fs.collection("qstats").doc(quiz.topicId).set(upd, { merge: true }).catch(cloudFail);
+  }
+}
+function scheduleRender() { if (modal) { pendingRender = true; return; } render(); }
+function loadScript(src) {
+  return new Promise((ok, fail) => { const s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = () => fail(new Error("Could not load " + src)); document.head.appendChild(s); });
+}
+function studentFromDoc(doc) { return { id: doc.id, best: {}, attempts: {}, points: 0, answered: 0, correct: 0, lastActive: null, ...doc.data() }; }
+function attachCommon() {
+  if (commonUnsubs.length) return;
+  commonUnsubs.push(fs.doc("meta/settings").onSnapshot(snap => {
+    const d = snap.exists ? snap.data() : {};
+    db.classes = d.classes || []; db.teachers = d.teachers || [];
+    scheduleRender();
+  }, e => { cloudError = e.message; scheduleRender(); }));
+  commonUnsubs.push(fs.doc("meta/bank").onSnapshot(snap => {
+    const d = snap.exists ? snap.data() : {};
+    db.topics = d.topics || []; db.questions = d.questions || []; bankLoaded = true;
+    scheduleRender();
+  }, e => { cloudError = e.message; scheduleRender(); }));
+}
+function ensureClassListener(cls) {
+  if (MODE === "local" || teacherUnsubs.length || !cls || classListening === cls) return;
+  if (classUnsub) classUnsub();
+  classListening = cls; classLoaded = false;
+  db.students = {};
+  classUnsub = fs.collection("students").where("cls", "==", cls).onSnapshot(snap => {
+    snap.docChanges().forEach(ch => {
+      if (ch.type === "removed") delete db.students[ch.doc.id];
+      else db.students[ch.doc.id] = studentFromDoc(ch.doc);
+    });
+    classLoaded = true; scheduleRender();
+  }, e => { cloudError = e.message; scheduleRender(); });
+}
+function detachTeacher() { teacherUnsubs.forEach(u => u()); teacherUnsubs = []; }
+async function enterTeacher(user) {
+  const email = (user.email || "").toLowerCase();
+  const ref = fs.doc("meta/settings");
+  const snap = await ref.get();
+  if (!snap.exists) {
+    // First teacher to sign in sets up the school: settings + the starter question bank.
+    const seed = seedDb(false);
+    const batch = fs.batch();
+    batch.set(ref, { teachers: [email], classes: seed.classes });
+    batch.set(fs.doc("meta/bank"), clean({ topics: seed.topics, questions: seed.questions }));
+    await batch.commit();
+  } else if (!(snap.data().teachers || []).includes(email)) {
+    loginRole = "teacher";
+    loginError = email + " is not registered as a teacher. Ask an existing teacher to add this email in Settings.";
+    await auth.signOut();
+    return;
+  }
+  if (classUnsub) { classUnsub(); classUnsub = null; classListening = null; }
+  attachCommon();
+  detachTeacher();
+  db.students = {}; db.qstats = {};
+  teacherUnsubs.push(fs.collection("students").onSnapshot(s => {
+    s.docChanges().forEach(ch => { if (ch.type === "removed") delete db.students[ch.doc.id]; else db.students[ch.doc.id] = studentFromDoc(ch.doc); });
+    classLoaded = true; scheduleRender();
+  }, e => { cloudError = e.message; scheduleRender(); }));
+  teacherUnsubs.push(fs.collection("qstats").onSnapshot(s => {
+    const all = {};
+    s.forEach(doc => { const d = doc.data(); Object.keys(d).forEach(k => { all[k] = d[k]; }); });
+    db.qstats = all; scheduleRender();
+  }));
+  session = { role: "teacher", email }; save();
+  view = "teacher";
+}
+function enterStudentMode() {
+  detachTeacher();
+  attachCommon();
+  if (session && session.role === "teacher") { session = null; save(); view = "login"; }
+  if (session && session.role === "student") ensureClassListener(session.cls);
+}
+async function initCloud() {
+  try {
+    await loadScript(FIREBASE_SDK + "firebase-app-compat.js");
+    await loadScript(FIREBASE_SDK + "firebase-auth-compat.js");
+    await loadScript(FIREBASE_SDK + "firebase-firestore-compat.js");
+    firebase.initializeApp(FIREBASE_CONFIG);
+    auth = firebase.auth(); fs = firebase.firestore();
+    if (String(FIREBASE_CONFIG.projectId).startsWith("demo-")) { // local testing with the Firebase emulators
+      auth.useEmulator("http://127.0.0.1:9099"); fs.useEmulator("127.0.0.1", 8080);
+    }
+    auth.onAuthStateChanged(async user => {
+      try {
+        if (!user) { await auth.signInAnonymously(); return; }
+        if (user.isAnonymous) enterStudentMode();
+        else await enterTeacher(user);
+      } catch (e) { cloudError = e.message; }
+      cloudReady = true; render();
+    });
+  } catch (e) { cloudError = e.message; cloudReady = true; render(); }
+}
+function teacherSignIn() {
+  loginError = "";
+  auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e => { loginError = e.message; render(); });
+}
+function logoutTeacher() {
+  session = null; save(); view = "login"; loginRole = "teacher";
+  if (MODE === "cloud") { detachTeacher(); db.students = {}; auth.signOut(); }
+  render();
+}
+
+/* ================= UI state ================= */
+let view = "login";
+let loginRole = "student";
+let loginClass = db.classes[0];
+let loginError = "";
+let selectedStage = 6;
+let lbScope = "class";
+let quiz = null;
+// teacher
+let tTab = "overview";
+let tClass = "all";
+let tStage = 6;
+let tTopic = "all";
+let tStudent = null;
+let modal = null;
+
+if (MODE === "cloud") { if (session && session.role === "student" && session.cls) view = "home"; }
+else if (session && session.role === "student" && db.students[session.id]) view = "home";
+else if (session && session.role === "teacher") { view = "teacher"; }
+else session = null;
+
+/* ================= Helpers ================= */
+const $app = document.getElementById("app");
+function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function norm(s) { return String(s).trim().toLowerCase().replace(/\s+/g, " ").replace(/[.!]$/, ""); }
+function starsFor(correct, total) { if (!total) return 0; const r = correct / total; return r >= 1 ? 3 : r >= 0.6 ? 2 : r > 0 ? 1 : 0; }
+function me() { return session && session.role === "student" ? db.students[session.id] : null; }
+function topicQuestions(tid) { return db.questions.filter(q => q.topic === tid); }
+function topicById(tid) { return db.topics.find(t => t.id === tid); }
+function quizLength(tid) { return Math.min(MAX_QUESTIONS_PER_QUIZ, topicQuestions(tid).length); }
+function pct(c, a) { return a ? Math.round(100 * c / a) : null; }
+function heatStyle(p) {
+  if (p == null) return "background:#f1f4fa;color:#9aa7c2";
+  if (p >= 80) return "background:#d9f5e7;color:#12804c";
+  if (p >= 60) return "background:#fff2cc;color:#8a6500";
+  return "background:#fde0e0;color:#b83434";
+}
+function barColor(p) { return p >= 80 ? "var(--good)" : p >= 60 ? "var(--gold)" : "var(--bad)"; }
+function ago(ts) {
+  if (!ts) return "Never";
+  const d = Math.floor((Date.now() - ts) / 86400000);
+  return d <= 0 ? "Today" : d === 1 ? "Yesterday" : d + " days ago";
+}
+const AVATAR_COLORS = ["#2f6fed", "#20a464", "#8a4fe0", "#f07b1d", "#1b8fc7", "#e04f8a", "#c79a00"];
+function avatar(name, size) {
+  let h = 0; for (const ch of name) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  const s = size || 44;
+  return `<div class="avatar" style="width:${s}px;height:${s}px;background:${AVATAR_COLORS[h % AVATAR_COLORS.length]};font-size:${Math.round(s * 0.42)}px">${esc(name.charAt(0).toUpperCase())}</div>`;
+}
+const ICONS = {
+  bio: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>',
+  chem: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"/><path d="M10 3v6L4.5 18.5A1.7 1.7 0 0 0 6 21h12a1.7 1.7 0 0 0 1.5-2.5L14 9V3"/><path d="M7 15h10"/></svg>',
+  phys: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>',
+  earth: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>'
+};
+function star(filled, cls) {
+  return `<svg class="${cls == null ? "star" : cls}" viewBox="0 0 24 24"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z" fill="${filled ? "#f5b100" : "#dfe6f3"}" stroke="${filled ? "#d99a00" : "#c9d3e6"}" stroke-width="1.2" stroke-linejoin="round"/></svg>`;
+}
+const LOGO = '<svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="22" fill="#ffd34d"/><ellipse cx="24" cy="24" rx="17" ry="7" fill="none" stroke="#1f54c4" stroke-width="3" transform="rotate(30 24 24)"/><ellipse cx="24" cy="24" rx="17" ry="7" fill="none" stroke="#1f54c4" stroke-width="3" transform="rotate(-30 24 24)"/><circle cx="24" cy="24" r="4.5" fill="#e04f4f"/></svg>';
+
+/* ================= Render root ================= */
+function render() {
+  pendingRender = false;
+  document.body.classList.toggle("teacher", view === "teacher");
+  if (!cloudReady || cloudError || (view !== "login" && view !== "teacher" && !me())) {
+    if (cloudError) { $app.innerHTML = `<div class="wrap"><div class="card login"><div class="hero">${LOGO}</div><h1>Something went wrong</h1><div class="muted">${esc(cloudError)}</div><div style="margin-top:18px"><button class="btn" onclick="location.reload()">Try again</button></div></div></div>`; return; }
+    if (cloudReady && view !== "login" && view !== "teacher" && classLoaded) { session = null; save(); view = "login"; }
+    else { $app.innerHTML = `<div class="wrap"><div class="card login"><div class="hero">${LOGO}</div><h1>Loading…</h1><div class="muted">Connecting to the school server.</div></div></div>`; return; }
+  }
+  if (view === "login") { renderLogin(); renderModal(); return; }
+  let body = "", nav = "", pill = "";
+  if (view === "teacher") {
+    body = renderTeacher();
+    nav = ["overview", "students", "questions", "settings"].map(t =>
+      `<button data-ttab="${t}" class="${tTab === t ? "active" : ""}">${{ overview: "Overview", students: "Students", questions: "Questions", settings: "Settings" }[t]}</button>`).join("");
+    pill = `<button class="pill" id="logout" style="border:0;color:#fff">Log out</button>`;
+  } else {
+    if (view === "home") body = renderHome();
+    else if (view === "quiz") body = renderQuiz();
+    else if (view === "result") body = renderResult();
+    else if (view === "leaderboard") body = renderLeaderboard();
+    nav = `<button data-nav="home" class="${view === "home" ? "active" : ""}">Practice</button>
+           <button data-nav="leaderboard" class="${view === "leaderboard" ? "active" : ""}">Leaderboard</button>`;
+    pill = `<div class="pill"><span class="coin"></span>${me().points}</div>`;
+  }
+  $app.innerHTML = `
+    <div class="topbar"><div class="topbar-inner">
+      <div class="brand">${LOGO}<span>${view === "teacher" ? "Teacher" : "Science Quest"}</span></div>
+      <div class="nav">${nav}</div>
+      <div class="spacer"></div>
+      ${pill}
+    </div></div>
+    <div class="wrap">${body}</div>`;
+  $app.querySelectorAll("[data-nav]").forEach(b => b.onclick = () => { flushQuiz(); view = b.dataset.nav; quiz = null; if (view === "leaderboard") schoolTop = null; render(); window.scrollTo(0, 0); });
+  $app.querySelectorAll("[data-ttab]").forEach(b => b.onclick = () => { tTab = b.dataset.ttab; tStudent = null; render(); window.scrollTo(0, 0); });
+  const lo = document.getElementById("logout");
+  if (lo) lo.onclick = logoutTeacher;
+  bindView();
+  renderModal();
+}
+
+/* ================= Login ================= */
+function renderLogin() {
+  if (!db.classes.includes(loginClass)) loginClass = db.classes[0];
+  ensureClassListener(loginClass);
+  const roster = Object.values(db.students).filter(s => s.cls === loginClass).sort((a, b) => a.name.localeCompare(b.name));
+  const studentForm = `
+    <label for="cl">Your class</label>
+    <select id="cl">${db.classes.map(c => `<option ${c === loginClass ? "selected" : ""}>${esc(c)}</option>`).join("")}</select>
+    <label for="nm">Your name</label>
+    ${!classLoaded ? `<div class="muted" style="text-align:left">Loading names…</div>` : roster.length
+      ? `<select id="nm">${roster.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join("")}</select>`
+      : `<div class="muted" style="text-align:left">No students in this class yet. Ask your teacher to add you.</div>`}
+    <div style="margin-top:22px"><button class="btn block" type="submit" ${roster.length ? "" : "disabled"}>Start learning</button></div>`;
+  const teacherForm = MODE === "cloud" ? `
+    <div class="muted" style="margin-top:16px">Teachers sign in with their Google account.</div>
+    <div style="margin-top:18px"><button class="btn block" type="button" id="gSignIn">Sign in with Google</button></div>` : `
+    <label for="pin">Teacher PIN</label>
+    <input id="pin" type="text" inputmode="numeric" autocomplete="off" maxlength="8" placeholder="Enter PIN">
+    <div class="hint" style="text-align:left">Prototype PIN: 1234 (change it in Settings).</div>
+    <div style="margin-top:22px"><button class="btn block" type="submit">Open dashboard</button></div>`;
+  $app.innerHTML = `
+    <div class="wrap"><div class="card login">
+      <div class="hero">${LOGO}</div>
+      <h1>Science Quest</h1>
+      <div class="muted">Cambridge Primary Science practice</div>
+      <div class="role-seg">
+        <button data-role="student" class="${loginRole === "student" ? "active" : ""}">I'm a student</button>
+        <button data-role="teacher" class="${loginRole === "teacher" ? "active" : ""}">I'm a teacher</button>
+      </div>
+      <form id="loginForm">${loginRole === "student" ? studentForm : teacherForm}</form>
+      <div class="err">${esc(loginError)}</div>
+    </div></div>`;
+  $app.querySelectorAll("[data-role]").forEach(b => b.onclick = () => { loginRole = b.dataset.role; loginError = ""; render(); });
+  const cl = document.getElementById("cl");
+  if (cl) cl.onchange = () => { loginClass = cl.value; render(); };
+  const pin = document.getElementById("pin");
+  if (pin) pin.focus();
+  const g = document.getElementById("gSignIn");
+  if (g) g.onclick = teacherSignIn;
+  document.getElementById("loginForm").onsubmit = e => {
+    e.preventDefault();
+    loginError = "";
+    if (loginRole === "student") {
+      const nm = document.getElementById("nm");
+      if (!nm) return;
+      session = { role: "student", id: nm.value, cls: loginClass }; view = "home";
+    } else {
+      if (!pin) return;
+      if (pin.value.trim() !== String(db.pin)) { loginError = "Wrong PIN. Try again."; render(); return; }
+      session = { role: "teacher" }; view = "teacher"; tTab = "overview";
+    }
+    save(); render();
+  };
+}
+
+/* ================= Student: home ================= */
+function stagesWithQuestions() {
+  const s = new Set();
+  db.topics.forEach(t => { if (topicQuestions(t.id).length) s.add(+t.stage); });
+  return s;
+}
+function renderHome() {
+  const u = me();
+  const live = stagesWithQuestions();
+  const stageBtns = [1, 2, 3, 4, 5, 6].map(s =>
+    `<button class="stage-btn ${s === selectedStage ? "active" : ""}" data-stage="${s}">Stage ${s}${live.has(s) ? "" : '<span class="soon">coming soon</span>'}</button>`).join("");
+  const topics = db.topics.filter(t => +t.stage === selectedStage && topicQuestions(t.id).length);
+  let starsTotal = 0;
+  db.topics.forEach(t => { starsTotal += starsFor(u.best[t.id] || 0, quizLength(t.id)); });
+  const acc = pct(u.correct, u.answered) || 0;
+  const grid = topics.length ? `<div class="topics">${topics.map(t => {
+      const n = topicQuestions(t.id).length;
+      const st = starsFor(u.best[t.id] || 0, quizLength(t.id));
+      return `<button class="topic" data-topic="${t.id}">
+        <div class="icon strand-${t.strand}">${ICONS[t.strand]}</div>
+        <div><div class="t">${esc(t.name)}</div>
+          <div class="s">${STRAND_LABEL[t.strand]} · ${n} questions</div>
+          <div class="stars">${star(st >= 1)}${star(st >= 2)}${star(st >= 3)}</div></div>
+      </button>`;
+    }).join("")}</div>`
+    : `<div class="card empty"><h2 style="margin-top:0">Stage ${selectedStage} is coming soon</h2><div class="muted">Your teacher will add questions for this stage.</div></div>`;
+  return `
+    <h1>Hi, ${esc(u.name)}!</h1>
+    <div class="muted">Class ${esc(u.cls)} · Pick a topic and earn coins for every correct answer.</div>
+    <div class="stats">
+      <div class="card stat"><div class="num">${u.points}</div><div class="lbl">Coins</div></div>
+      <div class="card stat"><div class="num">${starsTotal}</div><div class="lbl">Stars</div></div>
+      <div class="card stat"><div class="num">${acc}%</div><div class="lbl">Accuracy</div></div>
+    </div>
+    <h2>Choose your stage</h2>
+    <div class="stages">${stageBtns}</div>
+    <h2>Topics</h2>
+    ${grid}
+    <div class="row-actions"><button class="btn ghost" id="switchStudent">Log out</button></div>`;
+}
+
+/* ================= Student: quiz ================= */
+function startQuiz(topicId) {
+  // Shuffle question order and the order of multiple-choice options.
+  const qs = shuffle(topicQuestions(topicId)).slice(0, MAX_QUESTIONS_PER_QUIZ).map(q => {
+    if (q.type !== "mcq") return q;
+    const order = shuffle(q.options.map((_, i) => i));
+    return { ...q, options: order.map(i => q.options[i]), answer: order.indexOf(q.answer) };
+  });
+  quiz = { topicId, qs, index: 0, picked: null, checked: false, results: [], done: false, flushed: 0 };
+  view = "quiz"; render(); window.scrollTo(0, 0);
+}
+function isCorrect(q, picked) {
+  if (picked === null || picked === undefined) return false;
+  if (q.type === "mcq" || q.type === "tf") return picked === q.answer;
+  return q.answer.map(norm).includes(norm(picked));
+}
+function answerText(q) {
+  if (q.type === "mcq") return "ABCD"[q.answer] + ". " + q.options[q.answer];
+  if (q.type === "tf") return q.answer ? "True" : "False";
+  return q.answer[0];
+}
+function givenText(q, picked) {
+  if (q.type === "mcq") return "ABCD"[picked] + ". " + q.options[picked];
+  if (q.type === "tf") return picked ? "True" : "False";
+  return picked;
+}
+function renderQuiz() {
+  const q = quiz.qs[quiz.index];
+  const total = quiz.qs.length;
+  const topic = topicById(quiz.topicId);
+  const prog = Math.round(100 * (quiz.index + (quiz.checked ? 1 : 0)) / total);
+  let answerArea = "";
+  if (q.type === "mcq") {
+    answerArea = `<div class="options">${q.options.map((o, i) => {
+      let cls = "";
+      if (quiz.checked) { if (i === q.answer) cls = "correct"; else if (i === quiz.picked) cls = "wrong"; }
+      else if (i === quiz.picked) cls = "selected";
+      return `<button class="opt ${cls}" data-opt="${i}" ${quiz.checked ? "disabled" : ""}><span class="key">${"ABCD"[i]}</span>${esc(o)}</button>`;
+    }).join("")}</div>`;
+  } else if (q.type === "tf") {
+    answerArea = `<div class="options tf">${[true, false].map(v => {
+      let cls = "";
+      if (quiz.checked) { if (v === q.answer) cls = "correct"; else if (v === quiz.picked) cls = "wrong"; }
+      else if (v === quiz.picked) cls = "selected";
+      return `<button class="opt ${cls}" data-tf="${v}" ${quiz.checked ? "disabled" : ""}>${v ? "True" : "False"}</button>`;
+    }).join("")}</div>`;
+  } else {
+    const val = quiz.picked == null ? "" : quiz.picked;
+    const ok = quiz.checked && isCorrect(q, quiz.picked);
+    answerArea = `<input id="fill" class="fill-input" type="text" autocomplete="off" placeholder="Type your answer" value="${esc(val)}" ${quiz.checked ? "disabled" : ""}
+      style="${quiz.checked ? (ok ? "border-color:var(--good);background:var(--good-bg)" : "border-color:var(--bad);background:var(--bad-bg)") : ""}">`;
+  }
+  let feedback = "";
+  if (quiz.checked) {
+    const ok = isCorrect(q, quiz.picked);
+    feedback = `<div class="feedback ${ok ? "ok" : "no"}">
+      <div class="title">${ok ? "Correct! +" + POINTS_PER_CORRECT + " coins" : "Not quite"}</div>
+      ${ok ? "" : `<div class="ans">Correct answer: ${esc(answerText(q))}</div>`}
+      <div class="exp">${esc(q.explanation)}</div></div>`;
+  }
+  const canCheck = quiz.picked !== null && quiz.picked !== "";
+  return `
+    <div class="quiz-head">
+      <button class="close-x" id="quitQuiz" aria-label="Quit">✕</button>
+      <div class="progress"><div style="width:${prog}%"></div></div>
+      <div class="qcount">${quiz.index + 1} / ${total}</div>
+    </div>
+    <div class="card">
+      <span class="tag strand-${topic.strand}">${esc(topic.name)}</span>
+      <div class="qtext">${esc(q.q)}</div>
+      ${answerArea}
+      ${feedback}
+      <div class="quiz-actions">
+        ${quiz.checked
+          ? `<button class="btn ${isCorrect(q, quiz.picked) ? "good" : ""}" id="next">${quiz.index + 1 < total ? "Next question" : "See results"}</button>`
+          : `<button class="btn" id="check" ${canCheck ? "" : "disabled"}>Check answer</button>`}
+      </div>
+    </div>`;
+}
+function checkAnswer() {
+  const q = quiz.qs[quiz.index];
+  if (quiz.picked === null || quiz.picked === "") return;
+  quiz.checked = true;
+  const ok = isCorrect(q, quiz.picked);
+  quiz.results.push({ q, ok, given: givenText(q, quiz.picked) });
+  const u = me();
+  u.answered += 1; u.lastActive = Date.now();
+  if (ok) { u.correct += 1; u.points += POINTS_PER_CORRECT; }
+  const s = db.qstats[q.id] || (db.qstats[q.id] = { a: 0, c: 0 });
+  s.a++; if (ok) s.c++;
+  save(); render();
+}
+function nextQuestion() {
+  if (quiz.index + 1 < quiz.qs.length) {
+    quiz.index += 1; quiz.picked = null; quiz.checked = false; render(); window.scrollTo(0, 0);
+  } else {
+    quiz.done = true;
+    const u = me();
+    const correct = quiz.results.filter(r => r.ok).length;
+    u.best[quiz.topicId] = Math.max(u.best[quiz.topicId] || 0, correct);
+    u.attempts[quiz.topicId] = (u.attempts[quiz.topicId] || 0) + 1;
+    save(); flushQuiz(); view = "result"; render(); window.scrollTo(0, 0);
+  }
+}
+function renderResult() {
+  const total = quiz.qs.length;
+  const correct = quiz.results.filter(r => r.ok).length;
+  const st = starsFor(correct, total);
+  const topic = topicById(quiz.topicId);
+  const msg = st === 3 ? "Perfect score! Amazing work!" : st === 2 ? "Great job! Keep going!" : "Good try! Review the answers and try again.";
+  return `
+    <div class="card result">
+      <div class="muted" style="font-weight:800">${esc(topic.name)}</div>
+      <div class="big-stars">${star(st >= 1, "")}${star(st >= 2, "")}${star(st >= 3, "")}</div>
+      <div class="score">${correct} / ${total}</div>
+      <div class="muted" style="font-weight:700">${msg}</div>
+      <div class="earned"><span class="coin"></span>+${correct * POINTS_PER_CORRECT} coins</div>
+      <div class="row-actions">
+        <button class="btn" id="retry">Try again</button>
+        <button class="btn ghost" id="toTopics">More topics</button>
+        <button class="btn ghost" id="toLb">Leaderboard</button>
+      </div>
+      <h2 style="text-align:left">Review your answers</h2>
+      <div class="review">${quiz.results.map((r, i) => `
+        <div class="review-item ${r.ok ? "ok" : "no"}">
+          <div class="q"><span class="mark">${r.ok ? "✓" : "✗"}</span> ${i + 1}. ${esc(r.q.q)}</div>
+          <div class="a">${r.ok ? "" : `Your answer: <b>${esc(r.given)}</b> · `}Correct answer: <b>${esc(answerText(r.q))}</b></div>
+          <div class="a muted">${esc(r.q.explanation)}</div>
+        </div>`).join("")}</div>
+    </div>`;
+}
+
+/* ================= Student: leaderboard ================= */
+function renderLeaderboard() {
+  const u = me();
+  let all;
+  if (lbScope === "class") all = Object.values(db.students).filter(s => s.cls === u.cls);
+  else if (MODE === "local") all = Object.values(db.students);
+  else {
+    if (!schoolTop) {
+      schoolTop = [];
+      fs.collection("students").orderBy("points", "desc").limit(30).get()
+        .then(s => { schoolTop = s.docs.map(studentFromDoc); scheduleRender(); }).catch(cloudFail);
+    }
+    all = schoolTop.filter(s => s.id !== u.id);
+    if (schoolTop.length < 30 || schoolTop.some(s => s.id === u.id)) all.push(u);
+  }
+  all.sort((a, b) => b.points - a.points || a.name.localeCompare(b.name));
+  const top = all.slice(0, 3);
+  const podiumOrder = [top[1], top[0], top[2]];
+  const podClass = ["p2", "p1", "p3"], rankNum = [2, 1, 3];
+  const podium = `<div class="podium">${podiumOrder.map((s, i) => s ? `
+      <div class="pod ${podClass[i]}">${avatar(s.name, 50)}
+        <div class="name">${esc(s.name)}</div><div class="pts">${s.points} coins</div>
+        <div class="bar">${rankNum[i]}</div></div>` : "<div></div>").join("")}</div>`;
+  const list = all.map((s, i) => `
+    <div class="lb-row ${s.id === u.id ? "me" : ""}">
+      <div class="rank">${i + 1}</div>${avatar(s.name, 38)}
+      <div class="nm">${esc(s.name)}${s.id === u.id ? " (you)" : ""}<div class="cls">Class ${esc(s.cls)}</div></div>
+      <div class="pts"><span class="coin"></span>${s.points}</div>
+    </div>`).join("");
+  const myRank = all.findIndex(s => s.id === u.id) + 1;
+  return `
+    <h1>Leaderboard</h1>
+    <div class="muted">${myRank ? `You are <b>#${myRank}</b> ${lbScope === "class" ? "in class " + esc(u.cls) : "in the school"}.` : ""}</div>
+    <div style="margin-top:14px" class="seg">
+      <button data-scope="class" class="${lbScope === "class" ? "active" : ""}">My class</button>
+      <button data-scope="school" class="${lbScope === "school" ? "active" : ""}">Whole school</button>
+    </div>
+    ${podium}
+    <div class="lb-list">${list}</div>
+    <div class="note">${MODE === "local" ? "Prototype: scores are saved on this device only. The full version shares them through the school server." : (lbScope === "school" ? "Whole school shows the top 30 students." : "")}</div>`;
+}
+
+/* ================= Teacher ================= */
+function classFilterSelect(id) {
+  return `<select id="${id}"><option value="all" ${tClass === "all" ? "selected" : ""}>All classes</option>${db.classes.map(c => `<option ${tClass === c ? "selected" : ""}>${esc(c)}</option>`).join("")}</select>`;
+}
+function filteredStudents() {
+  return Object.values(db.students).filter(s => tClass === "all" || s.cls === tClass);
+}
+function topicPctFor(students, tid) {
+  const n = quizLength(tid); let sum = 0, cnt = 0;
+  students.forEach(s => { if (s.best[tid] != null) { sum += s.best[tid] / (n || 1); cnt++; } });
+  return cnt ? { p: Math.round(100 * sum / cnt), cnt } : { p: null, cnt: 0 };
+}
+
+function renderTeacher() {
+  if (tTab === "students" && tStudent && db.students[tStudent]) return renderStudentDetail(db.students[tStudent]);
+  if (tTab === "overview") return renderOverview();
+  if (tTab === "students") return renderStudents();
+  if (tTab === "questions") return renderQuestions();
+  return renderSettings();
+}
+
+function renderOverview() {
+  const studs = filteredStudents();
+  const answered = studs.reduce((a, s) => a + s.answered, 0);
+  const correct = studs.reduce((a, s) => a + s.correct, 0);
+  const activeWeek = studs.filter(s => s.lastActive && Date.now() - s.lastActive < 7 * 86400000).length;
+  const topics = db.topics.filter(t => topicQuestions(t.id).length);
+  const topicRows = topics.map(t => ({ t, ...topicPctFor(studs, t.id) }))
+    .sort((a, b) => (a.p == null ? 999 : a.p) - (b.p == null ? 999 : b.p));
+  const classIds = tClass === "all" ? db.classes : [tClass];
+  const missed = db.questions
+    .filter(q => db.qstats[q.id] && db.qstats[q.id].a >= 3)
+    .map(q => ({ q, p: pct(db.qstats[q.id].c, db.qstats[q.id].a), a: db.qstats[q.id].a }))
+    .sort((a, b) => a.p - b.p).slice(0, 5);
+  const topStud = studs.slice().sort((a, b) => b.points - a.points).slice(0, 5);
+  return `
+    <div class="section-title" style="margin-top:8px"><h1 style="margin:0">Overview</h1>${classFilterSelect("ovClass")}</div>
+    <div class="kpis">
+      <div class="card kpi"><div class="num">${studs.length}</div><div class="lbl">Students</div></div>
+      <div class="card kpi"><div class="num">${activeWeek}</div><div class="lbl">Active this week</div></div>
+      <div class="card kpi"><div class="num">${answered}</div><div class="lbl">Questions answered</div></div>
+      <div class="card kpi"><div class="num">${pct(correct, answered) ?? 0}%</div><div class="lbl">Average accuracy</div></div>
+    </div>
+
+    <div class="section-title"><h2>Topic mastery</h2><span class="muted" style="font-size:13px;font-weight:700">Average best score, weakest first</span></div>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>Topic</th><th class="hide-sm">Strand</th>${classIds.map(c => `<th class="num">${esc(c)}</th>`).join("")}<th class="num">Tried by</th></tr></thead>
+      <tbody>${topicRows.map(r => `<tr>
+        <td><b>${esc(r.t.name)}</b><div class="qrow-meta">Stage ${r.t.stage}</div></td>
+        <td class="hide-sm">${STRAND_LABEL[r.t.strand]}</td>
+        ${classIds.map(c => { const x = topicPctFor(studs.filter(s => s.cls === c), r.t.id); return `<td class="num"><span class="heat" style="${heatStyle(x.p)}">${x.p == null ? "–" : x.p + "%"}</span></td>`; }).join("")}
+        <td class="num">${r.cnt} / ${studs.length}</td></tr>`).join("")}</tbody>
+    </table></div>
+
+    <div class="grid2">
+      <div>
+        <div class="section-title"><h2>Most-missed questions</h2></div>
+        <div class="tbl-wrap"><table class="tbl"><tbody>
+          ${missed.length ? missed.map(m => `<tr><td><div class="qrow-q">${esc(m.q.q)}</div><div class="qrow-meta">${esc((topicById(m.q.topic) || {}).name || "")} · ${m.a} attempts</div></td>
+            <td class="num"><span class="heat" style="${heatStyle(m.p)}">${m.p}%</span></td></tr>`).join("")
+            : `<tr><td class="muted">Not enough answers yet.</td></tr>`}
+        </tbody></table></div>
+        <div class="hint">Percent of attempts answered correctly, across all classes.</div>
+      </div>
+      <div>
+        <div class="section-title"><h2>Top students</h2></div>
+        <div class="tbl-wrap"><table class="tbl"><tbody>
+          ${topStud.map((s, i) => `<tr class="click" data-student="${s.id}"><td style="width:30px;font-weight:900;color:var(--muted)">${i + 1}</td>
+            <td><div class="namecell">${avatar(s.name, 32)}<div>${esc(s.name)}<div class="qrow-meta">Class ${esc(s.cls)}</div></div></div></td>
+            <td class="num"><b>${s.points}</b> coins</td></tr>`).join("") || `<tr><td class="muted">No students yet.</td></tr>`}
+        </tbody></table></div>
+      </div>
+    </div>`;
+}
+
+function renderStudents() {
+  const studs = filteredStudents().sort((a, b) => a.cls.localeCompare(b.cls) || b.points - a.points);
+  const totalStars = s => db.topics.reduce((a, t) => a + starsFor(s.best[t.id] || 0, quizLength(t.id)), 0);
+  return `
+    <div class="section-title" style="margin-top:8px"><h1 style="margin:0">Students</h1>
+      <div style="display:flex;gap:10px;align-items:center">${classFilterSelect("stClass")}<button class="btn sm" id="addStudent">+ Add student</button></div></div>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>Name</th><th>Class</th><th class="num">Coins</th><th class="num">Accuracy</th><th class="num hide-sm">Answered</th><th class="num hide-sm">Stars</th><th class="hide-sm">Last active</th></tr></thead>
+      <tbody>${studs.map(s => { const a = pct(s.correct, s.answered); return `<tr class="click" data-student="${s.id}">
+        <td><div class="namecell">${avatar(s.name, 32)}${esc(s.name)}</div></td>
+        <td>${esc(s.cls)}</td>
+        <td class="num"><b>${s.points}</b></td>
+        <td class="num"><span class="heat" style="${heatStyle(a)}">${a == null ? "–" : a + "%"}</span></td>
+        <td class="num hide-sm">${s.answered}</td>
+        <td class="num hide-sm">${totalStars(s)}</td>
+        <td class="hide-sm">${ago(s.lastActive)}</td></tr>`; }).join("") || `<tr><td colspan="7" class="muted">No students in this class yet. Click "Add student".</td></tr>`}</tbody>
+    </table></div>
+    <div class="hint">Click a student to see their results per topic.</div>`;
+}
+
+function renderStudentDetail(s) {
+  const a = pct(s.correct, s.answered);
+  const rows = db.topics.filter(t => topicQuestions(t.id).length).map(t => {
+    const n = quizLength(t.id), b = s.best[t.id];
+    const p = b == null ? null : Math.round(100 * b / n);
+    return `<tr><td><b>${esc(t.name)}</b><div class="qrow-meta">Stage ${t.stage} · ${STRAND_LABEL[t.strand]}</div></td>
+      <td class="num">${b == null ? "–" : b + " / " + n}</td>
+      <td style="width:30%"><div class="bar-mini"><div style="width:${p || 0}%;background:${barColor(p || 0)}"></div></div></td>
+      <td class="num">${s.attempts[t.id] || 0}</td>
+      <td class="num"><div class="stars" style="justify-content:flex-end">${(() => { const st = starsFor(b || 0, n); return star(st >= 1) + star(st >= 2) + star(st >= 3); })()}</div></td></tr>`;
+  }).join("");
+  return `
+    <button class="back" id="backStudents">← All students</button>
+    <div class="section-title" style="margin-top:10px">
+      <div class="namecell" style="font-size:24px">${avatar(s.name, 52)}<div>${esc(s.name)}<div class="qrow-meta" style="font-size:14px">Class ${esc(s.cls)} · Last active ${ago(s.lastActive).toLowerCase()}</div></div></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn sm ghost" id="editStudent">Edit</button>
+        <button class="btn sm ghost" id="resetStudent">Reset scores</button>
+        <button class="btn sm danger" id="delStudent">Remove</button>
+      </div>
+    </div>
+    <div class="kpis">
+      <div class="card kpi"><div class="num">${s.points}</div><div class="lbl">Coins</div></div>
+      <div class="card kpi"><div class="num">${a == null ? "–" : a + "%"}</div><div class="lbl">Accuracy</div></div>
+      <div class="card kpi"><div class="num">${s.answered}</div><div class="lbl">Questions answered</div></div>
+      <div class="card kpi"><div class="num">${Object.keys(s.best).length}</div><div class="lbl">Topics tried</div></div>
+    </div>
+    <h2>Results by topic</h2>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>Topic</th><th class="num">Best score</th><th></th><th class="num">Attempts</th><th class="num">Stars</th></tr></thead>
+      <tbody>${rows}</tbody></table></div>`;
+}
+
+function renderQuestions() {
+  const stageTopics = db.topics.filter(t => +t.stage === tStage);
+  if (tTopic !== "all" && !stageTopics.some(t => t.id === tTopic)) tTopic = "all";
+  const qs = db.questions.filter(q => { const t = topicById(q.topic); return t && +t.stage === tStage && (tTopic === "all" || q.topic === tTopic); });
+  return `
+    <div class="section-title" style="margin-top:8px"><h1 style="margin:0">Question bank</h1>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm ghost" id="addTopic">+ Add topic</button><button class="btn sm" id="addQuestion">+ Add question</button></div></div>
+    <div class="toolbar">
+      <select id="qStage">${[1, 2, 3, 4, 5, 6].map(s => `<option value="${s}" ${s === tStage ? "selected" : ""}>Stage ${s} (${db.questions.filter(q => { const t = topicById(q.topic); return t && +t.stage === s; }).length})</option>`).join("")}</select>
+      <select id="qTopic"><option value="all">All topics</option>${stageTopics.map(t => `<option value="${t.id}" ${t.id === tTopic ? "selected" : ""}>${esc(t.name)} (${topicQuestions(t.id).length})</option>`).join("")}</select>
+      ${tTopic !== "all" ? `<button class="linkbtn" id="editTopic">Edit topic</button>` : ""}
+    </div>
+    ${stageTopics.length === 0 ? `<div class="card empty"><h2 style="margin-top:0">No topics in Stage ${tStage} yet</h2><div class="muted">Add a topic first, then add questions to it.</div></div>` : `
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>Question</th><th class="hide-sm">Type</th><th class="num hide-sm">Correct rate</th><th></th></tr></thead>
+      <tbody>${qs.map(q => { const st = db.qstats[q.id]; const p = st && st.a ? pct(st.c, st.a) : null; return `<tr>
+        <td><div class="qrow-q">${esc(q.q)}</div><div class="qrow-meta">${esc((topicById(q.topic) || {}).name)} · Answer: ${esc(answerText(q))}</div></td>
+        <td class="hide-sm"><span class="chip">${TYPE_LABEL[q.type]}</span></td>
+        <td class="num hide-sm"><span class="heat" style="${heatStyle(p)}">${p == null ? "–" : p + "%"}</span></td>
+        <td style="white-space:nowrap;text-align:right"><button class="linkbtn" data-editq="${q.id}">Edit</button><button class="linkbtn red" data-delq="${q.id}">Delete</button></td></tr>`; }).join("") || `<tr><td colspan="4" class="muted">No questions here yet.</td></tr>`}</tbody>
+    </table></div>`}
+    <div class="hint">Students see a topic once it has at least one question. Each practice round uses up to ${MAX_QUESTIONS_PER_QUIZ} random questions from the topic.</div>`;
+}
+
+function renderSettings() {
+  return `
+    <h1>Settings</h1>
+    <div class="grid2">
+      <div class="card">
+        <h2 style="margin-top:0">Classes</h2>
+        <div class="tbl-wrap" style="box-shadow:none;border:2px solid #eef2fa"><table class="tbl"><tbody>
+          ${db.classes.map(c => `<tr><td><b>${esc(c)}</b></td><td class="num">${Object.values(db.students).filter(s => s.cls === c).length} students</td>
+            <td style="text-align:right"><button class="linkbtn red" data-delclass="${esc(c)}">Remove</button></td></tr>`).join("")}
+        </tbody></table></div>
+        <form id="addClassForm" style="display:flex;gap:8px;margin-top:12px">
+          <input id="newClass" type="text" maxlength="12" placeholder="e.g. 5A">
+          <button class="btn sm" type="submit">Add</button>
+        </form>
+      </div>
+      ${MODE === "cloud" ? `<div class="card">
+        <h2 style="margin-top:0">Teachers</h2>
+        <div class="muted" style="font-size:14px">These Google accounts can open the teacher dashboard.</div>
+        <div class="tbl-wrap" style="box-shadow:none;border:2px solid #eef2fa;margin-top:10px"><table class="tbl"><tbody>
+          ${db.teachers.map(t => `<tr><td><b>${esc(t)}</b></td><td style="text-align:right">${session && session.email === t ? '<span class="muted">you</span>' : `<button class="linkbtn red" data-delteacher="${esc(t)}">Remove</button>`}</td></tr>`).join("")}
+        </tbody></table></div>
+        <form id="addTeacherForm" style="display:flex;gap:8px;margin-top:12px">
+          <input id="newTeacher" type="text" maxlength="80" placeholder="teacher@gmail.com">
+          <button class="btn sm" type="submit">Add</button>
+        </form>
+      </div>` : `<div class="card">
+        <h2 style="margin-top:0">Teacher PIN</h2>
+        <form id="pinForm">
+          <label for="newPin" style="margin-top:0">New PIN</label>
+          <input id="newPin" type="text" inputmode="numeric" maxlength="8" placeholder="4 to 8 digits">
+          <div style="margin-top:12px"><button class="btn sm" type="submit">Save PIN</button></div>
+          <div class="err" id="pinMsg"></div>
+        </form>
+        <h2>Demo data</h2>
+        <div class="muted" style="font-size:14px">Bring back the sample students, scores and the original question bank. Your changes will be lost.</div>
+        <div style="margin-top:12px"><button class="btn sm danger" id="resetDemo">Reset everything</button></div>
+      </div>`}
+    </div>
+    <div class="note">${MODE === "local" ? "Prototype: all data is saved in this browser only. In the full version it is stored on the school server and shared by every device." : "All data is stored on the school's Firebase server."}</div>`;
+}
+
+/* ================= Modals ================= */
+function openModal(m) { modal = m; render(); }
+function closeModal() { modal = null; render(); }
+function renderModal() {
+  const old = document.getElementById("modalRoot");
+  if (old) old.remove();
+  if (!modal) return;
+  const root = document.createElement("div");
+  root.id = "modalRoot";
+  root.className = "modal-bg";
+  root.innerHTML = `<div class="modal">${modal.html()}</div>`;
+  document.body.appendChild(root);
+  root.addEventListener("mousedown", e => { if (e.target === root) closeModal(); });
+  modal.bind(root);
+}
+function confirmModal(title, text, okLabel, onOk) {
+  openModal({
+    html: () => `<h2>${esc(title)}</h2><div class="muted">${esc(text)}</div>
+      <div class="modal-actions"><button class="btn ghost sm" id="mCancel">Cancel</button><button class="btn danger sm" id="mOk">${esc(okLabel)}</button></div>`,
+    bind: r => { r.querySelector("#mCancel").onclick = closeModal; r.querySelector("#mOk").onclick = () => { onOk(); modal = null; save(); render(); }; }
+  });
+}
+function studentModal(existing) {
+  openModal({
+    html: () => `<h2>${existing ? "Edit student" : "Add student"}</h2>
+      <form id="sForm">
+        <label for="sName" style="margin-top:0">Name</label>
+        <input id="sName" type="text" maxlength="24" value="${esc(existing ? existing.name : "")}" placeholder="Student name">
+        <label for="sClass">Class</label>
+        <select id="sClass">${db.classes.map(c => `<option ${(existing ? existing.cls : (tClass !== "all" ? tClass : db.classes[0])) === c ? "selected" : ""}>${esc(c)}</option>`).join("")}</select>
+        ${existing ? "" : `<div class="hint">Tip: you can add several at once by putting one name per line.</div>`}
+        <div class="err" id="sErr"></div>
+        <div class="modal-actions"><button type="button" class="btn ghost sm" id="mCancel">Cancel</button><button class="btn sm" type="submit">Save</button></div>
+      </form>`,
+    bind: r => {
+      if (!existing) { // allow multiple names
+        const inp = r.querySelector("#sName");
+        const ta = document.createElement("textarea"); ta.id = "sName"; ta.placeholder = "One name per line"; ta.maxLength = 2000;
+        inp.replaceWith(ta);
+      }
+      r.querySelector("#sName").focus();
+      r.querySelector("#mCancel").onclick = closeModal;
+      r.querySelector("#sForm").onsubmit = e => {
+        e.preventDefault();
+        const cls = r.querySelector("#sClass").value;
+        const names = r.querySelector("#sName").value.split("\n").map(x => x.trim()).filter(Boolean);
+        if (!names.length) { r.querySelector("#sErr").textContent = "Please type a name."; return; }
+        if (existing) { existing.name = names[0].slice(0, 24); existing.cls = cls; persistStudent(existing); }
+        else names.forEach(n => { const id = uid("st"); db.students[id] = { id, name: n.slice(0, 24), cls, points: 0, answered: 0, correct: 0, best: {}, attempts: {}, lastActive: null }; persistStudent(db.students[id]); });
+        closeModal();
+      };
+    }
+  });
+}
+function topicModal(existing) {
+  openModal({
+    html: () => `<h2>${existing ? "Edit topic" : "Add topic"}</h2>
+      <form id="tForm">
+        <label for="tName" style="margin-top:0">Topic name</label>
+        <input id="tName" type="text" maxlength="60" value="${esc(existing ? existing.name : "")}" placeholder="e.g. Plants and photosynthesis">
+        <label for="tStageSel">Stage</label>
+        <select id="tStageSel">${[1, 2, 3, 4, 5, 6].map(s => `<option value="${s}" ${(existing ? +existing.stage : tStage) === s ? "selected" : ""}>Stage ${s}</option>`).join("")}</select>
+        <label for="tStrand">Strand</label>
+        <select id="tStrand">${Object.keys(STRAND_LABEL).map(k => `<option value="${k}" ${existing && existing.strand === k ? "selected" : ""}>${STRAND_LABEL[k]}</option>`).join("")}</select>
+        <div class="err" id="tErr"></div>
+        <div class="modal-actions">
+          ${existing ? `<button type="button" class="btn danger sm" id="tDel" style="margin-right:auto">Delete topic</button>` : ""}
+          <button type="button" class="btn ghost sm" id="mCancel">Cancel</button><button class="btn sm" type="submit">Save</button></div>
+      </form>`,
+    bind: r => {
+      r.querySelector("#tName").focus();
+      r.querySelector("#mCancel").onclick = closeModal;
+      const del = r.querySelector("#tDel");
+      if (del) del.onclick = () => {
+        const n = topicQuestions(existing.id).length;
+        confirmModal("Delete this topic?", `"${existing.name}" and its ${n} question(s) will be removed.`, "Delete", () => {
+          db.questions = db.questions.filter(q => q.topic !== existing.id);
+          db.topics = db.topics.filter(t => t.id !== existing.id);
+          tTopic = "all"; persistBank();
+        });
+      };
+      r.querySelector("#tForm").onsubmit = e => {
+        e.preventDefault();
+        const name = r.querySelector("#tName").value.trim();
+        if (!name) { r.querySelector("#tErr").textContent = "Please type a topic name."; return; }
+        const stage = +r.querySelector("#tStageSel").value, strand = r.querySelector("#tStrand").value;
+        if (existing) Object.assign(existing, { name, stage, strand });
+        else { const id = uid("tp"); db.topics.push({ id, name, stage, strand }); tTopic = id; }
+        tStage = stage; persistBank(); closeModal();
+      };
+    }
+  });
+}
+function questionModal(existing) {
+  const draft = existing
+    ? { ...existing, options: existing.options ? existing.options.slice() : ["", "", "", ""], answer: Array.isArray(existing.answer) ? existing.answer.slice() : existing.answer }
+    : { topic: tTopic !== "all" ? tTopic : (db.topics.find(t => +t.stage === tStage) || {}).id, type: "mcq", q: "", options: ["", "", "", ""], answer: 0, explanation: "" };
+  let dStage = draft.topic && topicById(draft.topic) ? +topicById(draft.topic).stage : tStage;
+  const readForm = r => {
+    draft.topic = r.querySelector("#qTopicSel").value;
+    draft.q = r.querySelector("#qText").value;
+    draft.explanation = r.querySelector("#qExp").value;
+    if (draft.type === "mcq") {
+      draft.options = [0, 1, 2, 3].map(i => r.querySelector("#opt" + i).value);
+      const c = r.querySelector("input[name=correct]:checked"); draft.answer = c ? +c.value : 0;
+    } else if (draft.type === "tf") {
+      const c = r.querySelector("input[name=tfans]:checked"); draft.answer = c ? c.value === "true" : true;
+    } else {
+      draft.answer = r.querySelector("#fillAns").value.split(",").map(x => x.trim()).filter(Boolean);
+    }
+  };
+  openModal({
+    html: () => {
+      const topics = db.topics.filter(t => +t.stage === dStage);
+      let answerHtml = "";
+      if (draft.type === "mcq") {
+        const ans = typeof draft.answer === "number" ? draft.answer : 0;
+        answerHtml = `<label>Options <span class="muted" style="font-weight:700">(tick the correct one)</span></label>
+          ${[0, 1, 2, 3].map(i => `<div class="opt-edit"><input type="radio" name="correct" value="${i}" ${ans === i ? "checked" : ""} aria-label="Option ${"ABCD"[i]} is correct"><span class="k">${"ABCD"[i]}</span><input id="opt${i}" type="text" maxlength="160" value="${esc((draft.options || [])[i] || "")}"></div>`).join("")}`;
+      } else if (draft.type === "tf") {
+        answerHtml = `<label>Correct answer</label><div class="radio-row">
+          <label><input type="radio" name="tfans" value="true" ${draft.answer !== false ? "checked" : ""}> True</label>
+          <label><input type="radio" name="tfans" value="false" ${draft.answer === false ? "checked" : ""}> False</label></div>`;
+      } else {
+        answerHtml = `<label for="fillAns">Accepted answers</label>
+          <input id="fillAns" type="text" maxlength="200" value="${esc(Array.isArray(draft.answer) ? draft.answer.join(", ") : "")}" placeholder="e.g. magma">
+          <div class="hint">Separate different accepted answers with commas. Capital letters do not matter.</div>`;
+      }
+      return `<h2>${existing ? "Edit question" : "Add question"}</h2>
+        <form id="qForm">
+          <div class="grid2" style="gap:10px">
+            <div><label for="qStageSel" style="margin-top:0">Stage</label>
+              <select id="qStageSel">${[1, 2, 3, 4, 5, 6].map(s => `<option value="${s}" ${dStage === s ? "selected" : ""}>Stage ${s}</option>`).join("")}</select></div>
+            <div><label for="qTopicSel" style="margin-top:0">Topic</label>
+              <select id="qTopicSel">${topics.length ? topics.map(t => `<option value="${t.id}" ${draft.topic === t.id ? "selected" : ""}>${esc(t.name)}</option>`).join("") : `<option value="">No topics in this stage</option>`}</select></div>
+          </div>
+          <label for="qType">Question type</label>
+          <select id="qType">${Object.keys(TYPE_LABEL).map(k => `<option value="${k}" ${draft.type === k ? "selected" : ""}>${TYPE_LABEL[k]}</option>`).join("")}</select>
+          <label for="qText">Question</label>
+          <textarea id="qText" maxlength="500" placeholder="Type the question. For fill in the blank, use ____ for the gap.">${esc(draft.q)}</textarea>
+          ${answerHtml}
+          <label for="qExp">Explanation shown after answering</label>
+          <textarea id="qExp" maxlength="600" placeholder="Explain why the answer is correct.">${esc(draft.explanation)}</textarea>
+          <div class="err" id="qErr"></div>
+          <div class="modal-actions"><button type="button" class="btn ghost sm" id="mCancel">Cancel</button><button class="btn sm" type="submit">Save question</button></div>
+        </form>`;
+    },
+    bind: r => {
+      r.querySelector("#mCancel").onclick = closeModal;
+      r.querySelector("#qStageSel").onchange = e => { readForm(r); dStage = +e.target.value; const first = db.topics.find(t => +t.stage === dStage); draft.topic = first ? first.id : ""; renderModal(); };
+      r.querySelector("#qType").onchange = e => {
+        readForm(r); draft.type = e.target.value;
+        draft.answer = draft.type === "mcq" ? 0 : draft.type === "tf" ? true : [];
+        renderModal();
+      };
+      r.querySelector("#qForm").onsubmit = e => {
+        e.preventDefault(); readForm(r);
+        const err = m => { r.querySelector("#qErr").textContent = m; };
+        if (!draft.topic) return err("Choose a topic (add one first if this stage has none).");
+        if (!draft.q.trim()) return err("Please type the question.");
+        if (draft.type === "mcq" && draft.options.some(o => !o.trim())) return err("Please fill in all four options.");
+        if (draft.type === "fill" && !draft.answer.length) return err("Please type at least one accepted answer.");
+        if (!draft.explanation.trim()) return err("Please add a short explanation for students.");
+        const clean = { id: existing ? existing.id : uid("q"), topic: draft.topic, type: draft.type, q: draft.q.trim(), answer: draft.answer, explanation: draft.explanation.trim() };
+        if (draft.type === "mcq") clean.options = draft.options.map(o => o.trim());
+        if (existing) db.questions[db.questions.findIndex(q => q.id === existing.id)] = clean;
+        else db.questions.push(clean);
+        tStage = dStage; tTopic = draft.topic;
+        persistBank(); closeModal();
+      };
+    }
+  });
+}
+
+/* ================= Event binding ================= */
+function bindView() {
+  const on = (id, fn) => { const el = document.getElementById(id); if (el) el.onclick = fn; };
+  if (view === "home") {
+    $app.querySelectorAll("[data-stage]").forEach(b => b.onclick = () => { selectedStage = +b.dataset.stage; render(); });
+    $app.querySelectorAll("[data-topic]").forEach(b => b.onclick = () => startQuiz(b.dataset.topic));
+    on("switchStudent", () => { session = null; save(); view = "login"; loginRole = "student"; render(); });
+  }
+  if (view === "quiz") {
+    $app.querySelectorAll("[data-opt]").forEach(b => b.onclick = () => { quiz.picked = +b.dataset.opt; render(); });
+    $app.querySelectorAll("[data-tf]").forEach(b => b.onclick = () => { quiz.picked = b.dataset.tf === "true"; render(); });
+    const fill = document.getElementById("fill");
+    if (fill && !quiz.checked) {
+      fill.focus(); fill.setSelectionRange(fill.value.length, fill.value.length);
+      fill.oninput = () => { quiz.picked = fill.value; const btn = document.getElementById("check"); if (btn) btn.disabled = !fill.value.trim(); };
+      fill.onkeydown = e => { if (e.key === "Enter" && fill.value.trim()) checkAnswer(); };
+    }
+    on("check", checkAnswer);
+    on("next", nextQuestion);
+    on("quitQuiz", () => { flushQuiz(); quiz = null; view = "home"; render(); });
+  }
+  if (view === "result") {
+    on("retry", () => startQuiz(quiz.topicId));
+    on("toTopics", () => { quiz = null; view = "home"; render(); window.scrollTo(0, 0); });
+    on("toLb", () => { quiz = null; view = "leaderboard"; render(); window.scrollTo(0, 0); });
+  }
+  if (view === "leaderboard") {
+    $app.querySelectorAll("[data-scope]").forEach(b => b.onclick = () => { lbScope = b.dataset.scope; schoolTop = null; render(); });
+  }
+  if (view === "teacher") {
+    ["ovClass", "stClass"].forEach(id => { const el = document.getElementById(id); if (el) el.onchange = () => { tClass = el.value; render(); }; });
+    $app.querySelectorAll("[data-student]").forEach(r => r.onclick = () => { tTab = "students"; tStudent = r.dataset.student; render(); window.scrollTo(0, 0); });
+    on("addStudent", () => studentModal(null));
+    on("backStudents", () => { tStudent = null; render(); });
+    const s = tStudent && db.students[tStudent];
+    if (s) {
+      on("editStudent", () => studentModal(s));
+      on("resetStudent", () => confirmModal("Reset scores?", `${s.name}'s coins, stars and results will go back to zero.`, "Reset", () => {
+        Object.assign(s, { points: 0, answered: 0, correct: 0, best: {}, attempts: {} }); persistStudent(s);
+      }));
+      on("delStudent", () => confirmModal("Remove student?", `${s.name} and all their results will be deleted.`, "Remove", () => {
+        removeStudentDoc(s.id); tStudent = null;
+      }));
+    }
+    const qs = document.getElementById("qStage"); if (qs) qs.onchange = () => { tStage = +qs.value; tTopic = "all"; render(); };
+    const qt = document.getElementById("qTopic"); if (qt) qt.onchange = () => { tTopic = qt.value; render(); };
+    on("addTopic", () => topicModal(null));
+    on("editTopic", () => topicModal(topicById(tTopic)));
+    on("addQuestion", () => questionModal(null));
+    $app.querySelectorAll("[data-editq]").forEach(b => b.onclick = () => questionModal(db.questions.find(q => q.id === b.dataset.editq)));
+    $app.querySelectorAll("[data-delq]").forEach(b => b.onclick = () => {
+      const q = db.questions.find(x => x.id === b.dataset.delq);
+      confirmModal("Delete question?", q.q, "Delete", () => { db.questions = db.questions.filter(x => x.id !== q.id); delete db.qstats[q.id]; persistBank(); });
+    });
+    $app.querySelectorAll("[data-delclass]").forEach(b => b.onclick = () => {
+      const c = b.dataset.delclass, n = Object.values(db.students).filter(s => s.cls === c).length;
+      if (db.classes.length <= 1) return;
+      confirmModal("Remove class " + c + "?", n ? `Its ${n} student(s) and their results will also be deleted.` : "This class has no students.", "Remove", () => {
+        db.classes = db.classes.filter(x => x !== c);
+        Object.values(db.students).forEach(s => { if (s.cls === c) removeStudentDoc(s.id); });
+        persistSettings();
+        if (tClass === c) tClass = "all";
+      });
+    });
+    const acf = document.getElementById("addClassForm");
+    if (acf) acf.onsubmit = e => {
+      e.preventDefault();
+      const v = document.getElementById("newClass").value.trim().toUpperCase();
+      if (v && !db.classes.includes(v)) { db.classes.push(v); db.classes.sort(); persistSettings(); render(); }
+    };
+    $app.querySelectorAll("[data-delteacher]").forEach(b => b.onclick = () => {
+      const t = b.dataset.delteacher;
+      confirmModal("Remove teacher?", t + " will no longer be able to open the dashboard.", "Remove", () => {
+        db.teachers = db.teachers.filter(x => x !== t); persistSettings();
+      });
+    });
+    const atf = document.getElementById("addTeacherForm");
+    if (atf) atf.onsubmit = e => {
+      e.preventDefault();
+      const v = document.getElementById("newTeacher").value.trim().toLowerCase();
+      if (/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v) && !db.teachers.includes(v)) { db.teachers.push(v); persistSettings(); render(); }
+    };
+    const pf = document.getElementById("pinForm");
+    if (pf) pf.onsubmit = e => {
+      e.preventDefault();
+      const v = document.getElementById("newPin").value.trim();
+      const msg = document.getElementById("pinMsg");
+      if (!/^\d{4,8}$/.test(v)) { msg.style.color = "var(--bad)"; msg.textContent = "Use 4 to 8 digits."; return; }
+      db.pin = v; save(); msg.style.color = "var(--good)"; msg.textContent = "PIN saved.";
+      document.getElementById("newPin").value = "";
+    };
+    on("resetDemo", () => confirmModal("Reset everything?", "All students, scores and question changes will be replaced with the demo data.", "Reset", () => {
+      db = seedDb(true); tClass = "all"; tTopic = "all"; tStudent = null;
+    }));
+  }
+}
+
+render();
+if (MODE === "cloud") initCloud();
+
+</script>
+</body>
+</html>
