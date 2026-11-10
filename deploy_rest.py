@@ -8,9 +8,9 @@ Firebase Hosting and Firebase Rules REST APIs directly:
 """
 import gzip, hashlib, json, os, subprocess, sys, urllib.request, urllib.error
 
-PROJECT = "science-quest-7a4c3"
-SITE = PROJECT
 HERE = os.path.dirname(os.path.abspath(__file__))
+PROJECT = json.load(open(os.path.join(HERE, ".firebaserc")))["projects"]["default"]
+SITE = PROJECT
 
 
 def token():
